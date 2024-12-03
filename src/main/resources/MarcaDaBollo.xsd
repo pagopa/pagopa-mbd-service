@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema elementFormDefault="qualified"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:eb="http://PuntoAccessoPSP.spcoop.gov.it/ebollo"
+            targetNamespace="http://PuntoAccessoPSP.spcoop.gov.it/ebollo">
+
+    <xsd:simpleType name="stText40">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="40"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="stTextBase64">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="44"/>
+            <xsd:maxLength value="44"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="stText50">
+        <xsd:restriction base="xsd:string">
+            <xsd:minLength value="1"/>
+            <xsd:maxLength value="50"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="ctDebitore">
+        <xsd:sequence>
+            <xsd:element name="codiceFiscaleDebitore" type="xsd:string"/>
+            <xsd:element name="nomeDebitore" type="eb:stText50"/>
+            <xsd:element name="cognomeDebitore" type="eb:stText50"/>
+            <xsd:element name="emailDebitore" type="xsd:string"/>
+            <xsd:element name="provinciaResidenza" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="ctEnteCreditore">
+        <xsd:sequence>
+            <xsd:element name="codiceFiscaleEnte" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="ctHashDocumento">
+        <xsd:sequence>
+            <xsd:element name="hashDocumento" type="eb:stTextBase64"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="ctebollo">
+        <xsd:sequence>
+            <xsd:element name="debitore" type="eb:ctDebitore" minOccurs="1"/>
+            <xsd:element name="enteCreditore" type="eb:ctEnteCreditore" minOccurs="1"/>
+            <xsd:element name="hashDocumento" type="eb:ctHashDocumento" minOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <!-- Wrapper elements -->
+    <xsd:element name="service" type="eb:ctebollo"/>
+
+</xsd:schema>

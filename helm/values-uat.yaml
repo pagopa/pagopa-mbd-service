@@ -1,12 +1,13 @@
 microservice-chart:
-  namespace: "your-namespace" # TODO: set your AKS namespace
+  namespace: "ebollo"
   nameOverride: ""
-  fullnameOverride: ""
+  fullnameOverride: "mbd-service"
   image:
-    repository: ghcr.io/pagopa/yourname # TODO
+    repository: ghcr.io/pagopa/pagopa-mbd-service
     tag: "0.0.2"
     pullPolicy: Always
   livenessProbe:
+    handlerType: httpGet
     httpGet:
       path: /actuator/health/liveness
       port: 8080
@@ -14,6 +15,7 @@ microservice-chart:
     failureThreshold: 6
     periodSeconds: 10
   readinessProbe:
+    handlerType: httpGet
     httpGet:
       path: /actuator/health/readiness
       port: 8080
@@ -29,13 +31,13 @@ microservice-chart:
       - 8080
   ingress:
     create: true
-    host: "your.host" # TODO: set the host
-    path: /your-path-here/(.*) # TODO: set your path
+    host: "ebollo.itn.internal.uat.platform.pagopa.it"
+    path: /pagopa-mbd-service/(.*)
     servicePort: 8080
   serviceAccount:
-    create: false
-    annotations: {}
-    name: ""
+    name: "ebollo-workload-identity"
+  azure:
+    workloadIdentityClientId: <workload-identity-client-id-set-automatically-by-gha>
   podAnnotations: {}
   podSecurityContext:
     seccompProfile:
@@ -49,16 +51,16 @@ microservice-chart:
   resources:
     requests:
       memory: "512Mi"
-      cpu: "0.25"
+      cpu: "0.5"
     limits:
-      memory: "512Mi"
-      cpu: "0.25"
+      memory: "728Mi"
+      cpu: "1.5"
   autoscaling:
     enable: true
-    minReplica: 3
-    maxReplica: 10
-    pollingInterval: 10 # seconds
-    cooldownPeriod: 50 # seconds
+    minReplica: 1
+    maxReplica: 1
+    pollingInterval: 30 # seconds
+    cooldownPeriod: 300 # seconds
     triggers:
       - type: cpu
         metadata:
@@ -66,25 +68,26 @@ microservice-chart:
           type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
           value: "75"
   envConfig:
-    # TODO: set your name
-    WEBSITE_SITE_NAME: 'yourProjectName' # required to show cloud role name in application insights
-    ENV: 'azure-uat'
-    APP_LOGGING_LEVEL: 'DEBUG'
+    APP_NAME: "mbd-service"
+    APP_ENVIRONMENT: "uat"
+    WEBSITE_SITE_NAME: 'mbd-service' # required to show cloud role name in application insights
+    APP_LOG_LEVEL: 'DEBUG'
     DEFAULT_LOGGING_LEVEL: 'INFO'
-    CORS_CONFIGURATION: '{"origins": ["*"], "methods": ["*"]}'
-    OTEL_SERVICE_NAME: # TODO
-    OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"
-    OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector.elastic-system.svc:4317"
-    OTEL_TRACES_EXPORTER: otlp
-    OTEL_METRICS_EXPORTER: otlp
-    OTEL_LOGS_EXPORTER: none
-    OTEL_TRACES_SAMPLER: "always_on"
+    DEMAND_PAYMENT_ENDPOINT: 'https://api.uat.platform.pagopa.it/nodo-auth/node-for-psp/v1'
+    CART_ENDPOINT: 'https://api.uat.platform.pagopa.it/checkout/carts-auth/v1/carts'
+    PAYMENT_RECEIPT_ENDPOINT: 'https://api.uat.platform.pagopa.it/gpd/payments-receipts-service/v1'
+    MBD_BASE_URL: 'https://api.uat.platform.pagopa.it/mbd/mbd-payment/v1/'
+    MBD_ID_PSP: 'ABI50004'
+    MBD_ID_BROKER_PSP: '99999000011'
+    MBD_CHANNEL_ID: '99999000011_03'
   envSecret:
     # required
-    APPLICATIONINSIGHTS_CONNECTION_STRING: 'ai-u-connection-string'
-    OTEL_EXPORTER_OTLP_HEADERS: elastic-apm-secret-token
+    APPLICATIONINSIGHTS_CONNECTION_STRING: 'app-insight-connection-string'
+    DEMAND_PAYMENT_SUBKEY: 'nodo-auth'
+    CART_SUBKEY: 'checkout-carts'
+    PAYMENT_RECEIPT_SUBKEY: 'gpd-payments-rest-aks'
   keyvault:
-    name: "pagopa-u-name-kv" #TODO
+    name: "pagopa-u-itn-ebollo-kv"
     tenantId: "7788edaf-0346-4068-9d79-c868aed15b3d"
   nodeSelector: {}
   tolerations: []
@@ -111,7 +114,7 @@ microservice-chart:
     deployment:
       create: true
       image:
-        repository: ghcr.io/pagopa/yourname # TODO
+        repository: ghcr.io/pagopa/pagopa-mbd-service
         tag: "0.0.0"
         pullPolicy: Always
       envConfig: {}
