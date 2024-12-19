@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: "pagopa-mbd-service"
   image:
     repository: ghcr.io/pagopa/pagopa-mbd-service
-    tag: "1.2.3"
+    tag: "1.2.3-2-PPANTT-196-feat-introducing-int-tests"
     pullPolicy: Always
   livenessProbe:
     handlerType: httpGet
@@ -79,7 +79,7 @@ microservice-chart:
     MBD_BASE_URL: 'https://api.dev.platform.pagopa.it/pagopa-mbd-service/v1'
     MBD_ID_PSP: 'ABI50004'
     MBD_ID_BROKER_PSP: '99999000011'
-    MBD_CHANNEL_ID: '99999000011_03'
+    MBD_CHANNEL_ID: '99999000011_02'
     ENV: 'azure-dev'
     CORS_CONFIGURATION: '{"origins": ["*"], "methods": ["*"]}'
     OTEL_SERVICE_NAME: "pagopa-mbd-service"

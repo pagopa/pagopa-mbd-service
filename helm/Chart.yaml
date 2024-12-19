@@ -2,8 +2,8 @@ apiVersion: v2
 name: pagopa-mbd-service
 description: Microservice that handles services for eBollo
 type: application
-version: 0.102.0
-appVersion: 1.2.3
+version: 0.104.0
+appVersion: 1.2.3-2-PPANTT-196-feat-introducing-int-tests
 dependencies:
   - name: microservice-chart
     version: 7.1.1

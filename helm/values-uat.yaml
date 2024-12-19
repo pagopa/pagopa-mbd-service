@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: "pagopa-mbd-service"
   image:
     repository: ghcr.io/pagopa/pagopa-mbd-service
-    tag: "1.2.3"
+    tag: "1.2.3-2-PPANTT-196-feat-introducing-int-tests"
     pullPolicy: Always
   livenessProbe:
     handlerType: httpGet

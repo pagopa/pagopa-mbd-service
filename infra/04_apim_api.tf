@@ -1,6 +1,5 @@
 locals {
   apim_mbd = {
-    // GPD Payments Pull
     display_name          = "Marca da Bollo Digitale"
     description           = "API for eBollo 2.0"
     path                  = "pagopa-mbd-service"
