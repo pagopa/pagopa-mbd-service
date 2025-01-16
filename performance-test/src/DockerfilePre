@@ -1,5 +1,5 @@
 # specify the node base image with your desired version node:<version>
-FROM node:18
+FROM node:18@sha256:8b7f2b36c945174b27fe833689fcc47b78dd47de0eda2d6e868e6e4ec2c63ae0
 
 WORKDIR /src/node-app
 
