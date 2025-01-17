@@ -11,9 +11,9 @@ After(async function () {
   this.response = null;
 
   if (this.payResponse != null) {
-    var responseDebtPosition = await getDebtPositions(fiscalCodeEC, this.dueDate);
-
-    for(let element of responseDebtPosition?.data?.payment_position_list){
+    var responseDebtPosition = await getDebtPositions(fiscalCodeEC, this.dueDate.split('T')[0]);
+    
+    for(let element of responseDebtPosition?.payment_position_list){
        if (element.paymentOption[0].nav === this.correctNav) {
             await deleteDebtPosition(fiscalCodeEC, element.iupd);
        }
