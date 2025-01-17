@@ -11,9 +11,9 @@ After(async function () {
   this.response = null;
 
   if (this.payResponse != null) {
-    var responseDebtPosition = await getDebtPositions(fiscalCodeEC, dueDate);
-
-    for(let position of responseDebtPosition?.data?.payment_position_list){
+    var responseDebtPosition = await getDebtPositions(fiscalCodeEC, this.dueDate.split('T')[0]);
+    
+    for(let element of responseDebtPosition?.payment_position_list){
        if (element.paymentOption[0].nav === this.correctNav) {
             await deleteDebtPosition(fiscalCodeEC, element.iupd);
        }
@@ -63,7 +63,7 @@ Then('response contains mdb nav', function () {
 
 Given('a receipt of the former MDB payment being payed', async function () {
 
-    this.payResponse = await getPayPosition(fiscalCodeEC, correctNav);
+    this.payResponse = await getPayPosition(fiscalCodeEC, receiptNav);
     assert.notEqual(this.payResponse, null);
     this.dueDate = this.payResponse?.data?.dueDate;
 //    var payBody = {
