@@ -1,6 +1,9 @@
 const assert = require('assert');
-const { Given, When, Then, After } = require('@cucumber/cucumber');
+const { Given, When, Then, After, setDefaultTimeout } = require('@cucumber/cucumber');
 const {getMDB, getMdbReceipt, getBody, getPayPosition, payReceipt, getDebtPositions, deleteDebtPosition} = require("./common.js");
+
+// set timeout for Hooks function, it allows to wait for long task
+setDefaultTimeout(15 * 1000);
 
 var fiscalCodeEC = process.env.FISCAL_CODE_EC;
 var receiptNav = process.env.CORRECT_NAV;
