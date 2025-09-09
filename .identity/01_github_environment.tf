@@ -21,7 +21,7 @@ resource "github_repository_environment" "github_repository_environment" {
 
 locals {
   env_secrets = {
-    "CLIENT_ID" : data.azurerm_user_assigned_identity.identity_cd_01.client_id,
+    "CD_CLIENT_ID" : data.azurerm_user_assigned_identity.identity_cd_01.client_id,
     "TENANT_ID" : data.azurerm_client_config.current.tenant_id,
     "SUBSCRIPTION_ID" : data.azurerm_subscription.current.subscription_id,
     "SUBKEY" : data.azurerm_key_vault_secret.key_vault_integration_test_subkey.value,
@@ -40,7 +40,8 @@ locals {
     "SONAR_TOKEN" : data.azurerm_key_vault_secret.key_vault_sonar.value,
     "BOT_TOKEN_GITHUB" : data.azurerm_key_vault_secret.key_vault_bot_token.value,
     "CUCUMBER_PUBLISH_TOKEN" : data.azurerm_key_vault_secret.key_vault_cucumber_token.value,
-    "SLACK_WEBHOOK_URL" : data.azurerm_key_vault_secret.key_vault_slack_webhook_url.value,
+    "SLACK_WEBHOOK_URL_DEPLOY" : data.azurerm_key_vault_secret.key_vault_deploy_slack_webhook.value,
+    "SLACK_WEBHOOK_URL_INTEGRATION_TEST" : data.azurerm_key_vault_secret.key_vault_integration_test_slack_webhook.value,
   }
   special_repo_secrets = {
     "SUBSCRIPTION_ID" : {
