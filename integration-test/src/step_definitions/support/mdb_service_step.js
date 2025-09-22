@@ -56,12 +56,12 @@ Then('response body contains checkoutUrl', function () {
 });
 
 Then('response contains mdb link', function () {
-  assert.notEqual(this.response?.data?.navDownloadLink, null);
+  assert.notEqual(this.response?.data?.mbdDownloadLink, null);
 });
 
 Then('response contains mdb nav', function () {
-  assert.notEqual(this.response?.data?.mbdNav, null);
-  this.correctNav = this.response?.data?.mbdNav;
+  assert.notEqual(this.response?.data?.nav, null);
+  this.correctNav = this.response?.data?.nav;
 });
 
 Given('a receipt of the former MDB payment being payed', async function () {

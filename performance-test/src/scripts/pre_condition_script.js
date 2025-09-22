@@ -15,7 +15,7 @@ const createPositionForReceipt = async () => {
       "idReceipt": this.response?.data?.idReceipt,
       "fee": this.response?.data?.fee
     }
-    await payReceipt(fiscalCodeEC, this.responseMDB?.data?.mbdNav, payBody);
+    await payReceipt(fiscalCodeEC, this.responseMDB?.data?.nav, payBody);
 
 
 };

@@ -449,6 +449,20 @@
           }
         }
       },
+      "GetCartResponse": {
+        "type": "object",
+        "properties": {
+          "checkoutRedirectUrl": {
+            "type": "string"
+          },
+          "mbdDownloadLink": {
+            "type": "string"
+          },
+          "nav": {
+            "type": "string"
+          }
+        }
+      },
       "ProblemJson": {
         "type": "object",
         "properties": {
@@ -475,20 +489,6 @@
         "type": "object",
         "properties": {
           "errorUrl": {
-            "type": "string"
-          }
-        }
-      },
-      "GetCartResponse": {
-        "type": "object",
-        "properties": {
-          "checkoutRedirectUrl": {
-            "type": "string"
-          },
-          "navDownloadLink": {
-            "type": "string"
-          },
-          "mbdNav": {
             "type": "string"
           }
         }
