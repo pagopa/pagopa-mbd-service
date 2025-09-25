@@ -120,8 +120,8 @@ public class MbdServiceImpl implements MbdService {
             item -> {
               String noticeNumber =
                   hashMap.get("demandPaymentNoticeResponse").getQrCode().getNoticeNumber();
-              item.setMbdNav(noticeNumber);
-              item.setNavDownloadLink(
+              item.setNav(noticeNumber);
+              item.setMbdDownloadLink(
                   StringUtils.joinWith(
                       "/", mdbLinkBaseUrl, "organizations", fiscalCodeEC, "receipt", noticeNumber));
               return ResponseEntity.ok().header(CONTENT_TYPE, APPLICATION_JSON_VALUE).body(item);

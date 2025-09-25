@@ -13,7 +13,7 @@ public class GetCartResponse {
 
   private String checkoutRedirectUrl;
 
-  private String navDownloadLink;
+  private String mbdDownloadLink;
 
-  private String mbdNav;
+  private String nav;
 }

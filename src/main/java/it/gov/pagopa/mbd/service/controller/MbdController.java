@@ -155,10 +155,10 @@ public class MbdController {
                     schema = @Schema(implementation = ProblemJson.class)))
       })
   @GetMapping(
-      value = "/organizations/{fiscalCode}/receipt/{nav}",
+      value = "/organizations/{fiscalCodeEC}/receipt/{nav}",
       produces = MediaType.APPLICATION_XML_VALUE)
   public Mono<ResponseEntity> getPaymentReceipts(
-      @PathVariable("fiscalCode") String fiscalCode, @PathVariable("nav") String nav) {
+      @PathVariable("fiscalCodeEC") String fiscalCode, @PathVariable("nav") String nav) {
     return mdbService.getPaymentReceipts(fiscalCode, nav).onErrorResume(Mono::error);
   }
 }
