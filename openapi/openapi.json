@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "mbd-service",
-    "description": "MBD Service",
+    "title": "@e.bollo Service",
+    "description": "MBD - @e.bollo Service",
     "termsOfService": "https://www.pagopa.gov.it/",
     "version": "1.2.9"
   },
@@ -85,6 +85,7 @@
           {
             "name": "fiscalCodeEC",
             "in": "path",
+            "description": "The organization fiscal code",
             "required": true,
             "schema": {
               "type": "string"
@@ -134,6 +135,11 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemJson"
+                },
+                "example": {
+                  "status": 400,
+                  "title": "Bad Request",
+                  "detail": "<detail.message>"
                 }
               }
             }
@@ -161,7 +167,7 @@
             }
           },
           "404": {
-            "description": "ibans for the brokerCode not found",
+            "description": "Not Found",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -174,6 +180,11 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemJson"
+                },
+                "example": {
+                  "status": 404,
+                  "title": "Not Found",
+                  "detail": "<detail.message>"
                 }
               }
             }
@@ -237,6 +248,7 @@
           {
             "name": "fiscalCodeEC",
             "in": "path",
+            "description": "The organization fiscal code",
             "required": true,
             "schema": {
               "type": "string"
@@ -245,6 +257,7 @@
           {
             "name": "nav",
             "in": "path",
+            "description": "The notice number",
             "required": true,
             "schema": {
               "type": "string"
@@ -297,13 +310,6 @@
                   "type": "string"
                 }
               }
-            },
-            "content": {
-              "application/xml": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProblemJson"
-                }
-              }
             }
           },
           "403": {
@@ -318,7 +324,7 @@
             }
           },
           "404": {
-            "description": "ibans for the brokerCode not found",
+            "description": "Not Found",
             "headers": {
               "X-Request-Id": {
                 "description": "This header identifies the call",
@@ -331,6 +337,11 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemJson"
+                },
+                "example": {
+                  "status": 404,
+                  "title": "Not Found",
+                  "detail": "<detail.message>"
                 }
               }
             }
@@ -360,6 +371,11 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProblemJson"
+                },
+                "example": {
+                  "status": 500,
+                  "title": "Internal Server Error",
+                  "detail": "<detail.message>"
                 }
               }
             }
@@ -401,7 +417,9 @@
             }
           },
           "idCIService": {
-            "type": "string"
+            "type": "string",
+            "description": "Identifier of the association between the organization and MDB payment service.",
+            "example": "04"
           },
           "returnUrls": {
             "$ref": "#/components/schemas/ReturnUrls"
@@ -420,28 +438,41 @@
         "type": "object",
         "properties": {
           "firstName": {
-            "type": "string"
+            "type": "string",
+            "description": "Debtor name.",
+            "example": "Mario"
           },
           "lastName": {
-            "type": "string"
+            "type": "string",
+            "description": "Debtor surname.",
+            "example": "Rossi"
           },
           "fiscalCode": {
-            "type": "string"
+            "type": "string",
+            "description": "Debtor fiscal code.",
+            "example": "00000000000000000"
           },
           "email": {
-            "type": "string"
+            "type": "string",
+            "description": "Debtor mail.",
+            "example": "mario.rossi@test.test"
           },
           "amount": {
             "type": "integer",
-            "format": "int64"
+            "description": "MBD amount.",
+            "format": "int64",
+            "example": 16
           },
           "province": {
-            "type": "string"
+            "type": "string",
+            "description": "Debtor province.",
+            "example": "RM"
           },
           "documentHash": {
             "maxLength": 44,
             "minLength": 44,
-            "type": "string"
+            "type": "string",
+            "description": "Document hash."
           }
         }
       },
@@ -454,13 +485,19 @@
         "type": "object",
         "properties": {
           "successUrl": {
-            "type": "string"
+            "type": "string",
+            "description": "Redirect success URL.",
+            "example": "https://url1.it"
           },
           "cancelUrl": {
-            "type": "string"
+            "type": "string",
+            "description": "Redirect cancel URL.",
+            "example": "https://url2.it"
           },
           "errorUrl": {
-            "type": "string"
+            "type": "string",
+            "description": "Redirect error URL.",
+            "example": "https://url3.it"
           }
         }
       },
@@ -468,21 +505,9 @@
         "type": "object",
         "properties": {
           "errorUrl": {
-            "type": "string"
-          }
-        }
-      },
-      "GetCartResponse": {
-        "type": "object",
-        "properties": {
-          "checkoutRedirectUrl": {
-            "type": "string"
-          },
-          "mbdDownloadLink": {
-            "type": "string"
-          },
-          "nav": {
-            "type": "string"
+            "type": "string",
+            "description": "The error URL provided in the request.",
+            "example": "https://url.it"
           }
         }
       },
@@ -499,7 +524,7 @@
             "type": "integer",
             "description": "The HTTP status code generated by the origin server for this occurrence of the problem.",
             "format": "int32",
-            "example": 200
+            "example": 400
           },
           "detail": {
             "type": "string",
@@ -508,13 +533,35 @@
           }
         }
       },
+      "GetCartResponse": {
+        "type": "object",
+        "properties": {
+          "checkoutRedirectUrl": {
+            "type": "string",
+            "description": "Redirect URL to Checkout page.",
+            "example": "https://dev.checkout.pagopa.it.it/c/123"
+          },
+          "mbdDownloadLink": {
+            "type": "string",
+            "description": "URL to download MBD receipt.",
+            "example": "https://api.platform.pagopa.it/mbd/mbd-payment/v1/00000000000/receipt/300996299640641032"
+          },
+          "nav": {
+            "type": "string",
+            "description": "Notice number, used to download MBD receipt.",
+            "example": "300996299640641032"
+          }
+        }
+      },
       "GetMdbReceipt": {
         "type": "object",
         "properties": {
           "content": {
             "type": "array",
+            "description": "The MBD receipt.",
             "items": {
               "type": "string",
+              "description": "The MBD receipt.",
               "format": "byte"
             }
           }
