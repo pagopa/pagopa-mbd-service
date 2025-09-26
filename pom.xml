@@ -14,8 +14,8 @@
   <groupId>it.gov.pagopa.ebollo</groupId>
   <artifactId>mbd-service</artifactId>
   <version>1.2.9</version>
-  <name>MBD Service</name>
-  <description>MBD Service</description>
+  <name>@e.bollo Service</name>
+  <description>MBD - @e.bollo Service</description>
 
   <properties>
     <java.version>17</java.version>
