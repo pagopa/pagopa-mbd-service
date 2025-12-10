@@ -39,5 +39,6 @@ public class PaymentNotice {
 
   @Schema(description = "Document hash.")
   @Size(min = 44, max = 44)
+  @NotNull
   private String documentHash;
 }

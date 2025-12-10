@@ -14,17 +14,23 @@
       "url": "https://{host}{basePath}",
       "variables": {
         "host": {
-          "default": "api.dev.platform.pagopa.it",
           "enum": [
             "api.dev.platform.pagopa.it",
             "api.uat.platform.pagopa.it",
             "api.platform.pagopa.it"
-          ]
+          ],
+          "default": "api.dev.platform.pagopa.it"
         },
         "basePath": {
           "default": "/pagopa-mbd-service/v1"
         }
       }
+    }
+  ],
+  "tags": [
+    {
+      "name": "MBD",
+      "description": "APIs for @eBollo"
     }
   ],
   "paths": {
@@ -76,7 +82,7 @@
     "/organizations/{fiscalCodeEC}/mbd": {
       "post": {
         "tags": [
-          "mbd-controller"
+          "MBD"
         ],
         "summary": "getMbd",
         "description": "Return mbd data for payment on requirement ",
@@ -239,7 +245,7 @@
     "/organizations/{fiscalCodeEC}/receipt/{nav}": {
       "get": {
         "tags": [
-          "mbd-controller"
+          "MBD"
         ],
         "summary": "getPaymentReceipt",
         "description": "Return receipt of payment on requirement ",
@@ -429,6 +435,7 @@
       "PaymentNotice": {
         "required": [
           "amount",
+          "documentHash",
           "email",
           "firstName",
           "fiscalCode",
@@ -501,13 +508,23 @@
           }
         }
       },
-      "GetCartErrorResponse": {
+      "GetCartResponse": {
         "type": "object",
         "properties": {
-          "errorUrl": {
+          "checkoutRedirectUrl": {
             "type": "string",
-            "description": "The error URL provided in the request.",
-            "example": "https://url.it"
+            "description": "Redirect URL to Checkout page.",
+            "example": "https://dev.checkout.pagopa.it.it/c/123"
+          },
+          "mbdDownloadLink": {
+            "type": "string",
+            "description": "URL to download MBD receipt.",
+            "example": "https://api.platform.pagopa.it/mbd/mbd-payment/v1/00000000000/receipt/300996299640641032"
+          },
+          "nav": {
+            "type": "string",
+            "description": "Notice number, used to download MBD receipt.",
+            "example": "300996299640641032"
           }
         }
       },
@@ -533,23 +550,13 @@
           }
         }
       },
-      "GetCartResponse": {
+      "GetCartErrorResponse": {
         "type": "object",
         "properties": {
-          "checkoutRedirectUrl": {
+          "errorUrl": {
             "type": "string",
-            "description": "Redirect URL to Checkout page.",
-            "example": "https://dev.checkout.pagopa.it.it/c/123"
-          },
-          "mbdDownloadLink": {
-            "type": "string",
-            "description": "URL to download MBD receipt.",
-            "example": "https://api.platform.pagopa.it/mbd/mbd-payment/v1/00000000000/receipt/300996299640641032"
-          },
-          "nav": {
-            "type": "string",
-            "description": "Notice number, used to download MBD receipt.",
-            "example": "300996299640641032"
+            "description": "The error URL provided in the request.",
+            "example": "https://url.it"
           }
         }
       },
