@@ -4,7 +4,7 @@
     "title": "@e.bollo Service",
     "description": "MBD - @e.bollo Service",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "version": "1.2.9"
+    "version": "1.2.10"
   },
   "servers": [
     {
