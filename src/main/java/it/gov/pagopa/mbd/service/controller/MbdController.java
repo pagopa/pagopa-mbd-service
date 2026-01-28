@@ -1,11 +1,14 @@
 package it.gov.pagopa.mbd.service.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.mbd.service.exception.AppException;
 import it.gov.pagopa.mbd.service.model.ProblemJson;
 import it.gov.pagopa.mbd.service.model.carts.GetCartErrorResponse;
@@ -13,6 +16,7 @@ import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
 import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
 import it.gov.pagopa.mbd.service.service.MbdService;
+import it.gov.pagopa.mbd.service.util.OpenAPIDocumentationConstants;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+@Tag(name = "MBD", description = "APIs for @eBollo")
 @RestController
 public class MbdController {
 
@@ -48,7 +53,10 @@ public class MbdController {
             content =
                 @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = ProblemJson.class))),
+                    schema = @Schema(implementation = ProblemJson.class),
+                    examples =
+                        @ExampleObject(
+                            value = OpenAPIDocumentationConstants.OPENAPI_BAD_REQUEST_EXAMPLE))),
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized",
@@ -59,11 +67,14 @@ public class MbdController {
             content = @Content(schema = @Schema())),
         @ApiResponse(
             responseCode = "404",
-            description = "ibans for the brokerCode not found",
+            description = "Not Found",
             content =
                 @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = ProblemJson.class))),
+                    schema = @Schema(implementation = ProblemJson.class),
+                    examples =
+                        @ExampleObject(
+                            value = OpenAPIDocumentationConstants.OPENAPI_NOT_FOUND_EXAMPLE))),
         @ApiResponse(
             responseCode = "429",
             description = "Too many requests",
@@ -80,7 +91,9 @@ public class MbdController {
       value = "/organizations/{fiscalCodeEC}/mbd",
       produces = MediaType.APPLICATION_JSON_VALUE)
   public Mono<ResponseEntity> getMdb(
-      @PathVariable("fiscalCodeEC") String fiscalCodeEC, @RequestBody GetMbdRequest request) {
+      @PathVariable("fiscalCodeEC") @Parameter(description = "The organization fiscal code")
+          String fiscalCodeEC,
+      @RequestBody GetMbdRequest request) {
     return mdbService
         .getMbd(fiscalCodeEC, request)
         .onErrorResume(
@@ -130,18 +143,21 @@ public class MbdController {
         @ApiResponse(
             responseCode = "401",
             description = "Unauthorized",
-            content = @Content(schema = @Schema(implementation = ProblemJson.class))),
+            content = @Content(schema = @Schema())),
         @ApiResponse(
             responseCode = "403",
             description = "Forbidden",
             content = @Content(schema = @Schema())),
         @ApiResponse(
             responseCode = "404",
-            description = "ibans for the brokerCode not found",
+            description = "Not Found",
             content =
                 @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = ProblemJson.class))),
+                    schema = @Schema(implementation = ProblemJson.class),
+                    examples =
+                        @ExampleObject(
+                            value = OpenAPIDocumentationConstants.OPENAPI_NOT_FOUND_EXAMPLE))),
         @ApiResponse(
             responseCode = "429",
             description = "Too many requests",
@@ -152,13 +168,20 @@ public class MbdController {
             content =
                 @Content(
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
-                    schema = @Schema(implementation = ProblemJson.class)))
+                    schema = @Schema(implementation = ProblemJson.class),
+                    examples =
+                        @ExampleObject(
+                            value =
+                                OpenAPIDocumentationConstants
+                                    .OPENAPI_INTERNAL_SERVER_ERROR_EXAMPLE))),
       })
   @GetMapping(
       value = "/organizations/{fiscalCodeEC}/receipt/{nav}",
       produces = MediaType.APPLICATION_XML_VALUE)
   public Mono<ResponseEntity> getPaymentReceipts(
-      @PathVariable("fiscalCodeEC") String fiscalCode, @PathVariable("nav") String nav) {
+      @PathVariable("fiscalCodeEC") @Parameter(description = "The organization fiscal code")
+          String fiscalCode,
+      @PathVariable("nav") @Parameter(description = "The notice number") String nav) {
     return mdbService.getPaymentReceipts(fiscalCode, nav).onErrorResume(Mono::error);
   }
 }
