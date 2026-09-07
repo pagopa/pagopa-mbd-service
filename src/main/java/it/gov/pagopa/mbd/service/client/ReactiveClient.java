@@ -30,7 +30,7 @@ public class ReactiveClient {
 
   private final ClientDataConfig clientDataConfig;
 
-  private final String OCP_SUBSCRIPTION_KEY = "ocp-apim-subscription-key";
+  private static final String OCP_SUBSCRIPTION_KEY = "ocp-apim-subscription-key";
 
   @Autowired
   public ReactiveClient(WebClient webClient, ClientDataConfig clientDataConfig) {

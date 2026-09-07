@@ -63,7 +63,7 @@ public class MbdServiceImpl implements MbdService {
 
   @Override
   public Mono<ResponseEntity> getMbd(String fiscalCodeEC, GetMbdRequest request) {
-    HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap();
+    HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap<>();
     return Mono.just(request)
         .doFirst(
             () -> {

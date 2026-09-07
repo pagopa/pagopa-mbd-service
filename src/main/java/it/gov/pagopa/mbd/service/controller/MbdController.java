@@ -101,9 +101,9 @@ public class MbdController {
               if (e instanceof ConstraintViolationException) {
                 return Mono.error(e);
               }
-              if (e instanceof AppException) {
+              if (e instanceof AppException appException) {
                 return Mono.just(
-                    ResponseEntity.status(((AppException) e).getHttpStatus())
+                    ResponseEntity.status(appException.getHttpStatus())
                         .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                         .body(
                             GetCartErrorResponse.builder()
