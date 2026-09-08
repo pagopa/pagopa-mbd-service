@@ -77,9 +77,9 @@ microservice-chart:
     CART_ENDPOINT: 'https://api.uat.platform.pagopa.it/checkout/carts-auth/v2/carts'
     PAYMENT_RECEIPT_ENDPOINT: 'https://api.uat.platform.pagopa.it/gpd/payments-receipts-service/v1'
     MBD_BASE_URL: 'https://api.dev.platform.pagopa.it/pagopa-mbd-service/v1'
-    MBD_ID_PSP: 'ABI50004'
-    MBD_ID_BROKER_PSP: '99999000011'
-    MBD_CHANNEL_ID: '99999000011_02'
+    MBD_ID_PSP: 'AGID_01'
+    MBD_ID_BROKER_PSP: '97735020584'
+    MBD_CHANNEL_ID: '97735020584_10'
     ENV: 'azure-dev'
     CORS_CONFIGURATION: '{"origins": ["*"], "methods": ["*"]}'
     OTEL_SERVICE_NAME: "pagopa-mbd-service"
