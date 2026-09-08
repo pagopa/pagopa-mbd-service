@@ -17,7 +17,6 @@ import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeRe
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 
 public class RequestMapper {
 
@@ -26,7 +25,6 @@ public class RequestMapper {
       String idBrokerPsp,
       String idChannel,
       String fiscalCodeEC,
-      Jaxb2Marshaller marshaller,
       GetMbdRequest getMdbRequest) {
 
     PaymentNotice paymentNotice = getMdbRequest.getPaymentNotices().get(0);

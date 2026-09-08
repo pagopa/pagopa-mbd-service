@@ -34,7 +34,6 @@ public class MbdServiceImpl implements MbdService {
 
   private final Validator validator;
   private final ReactiveClient reactiveSoapClient;
-  private final Jaxb2Marshaller jaxb2Marshaller;
   private final String mdbLinkBaseUrl;
 
   private final String idPsp;
@@ -47,14 +46,12 @@ public class MbdServiceImpl implements MbdService {
   public MbdServiceImpl(
       Validator validator,
       ReactiveClient reactiveSoapClient,
-      Jaxb2Marshaller jaxb2Marshaller,
       @Value("${mbd.link.baseUrl}") String mdbLinkBaseUrl,
       @Value("${mbd.mapper.idPsp}") String idPsp,
       @Value("${mbd.mapper.idBrokerPsp}") String idBrokerPsp,
       @Value("${mbd.mapper.channelId}") String channelId) {
     this.validator = validator;
     this.reactiveSoapClient = reactiveSoapClient;
-    this.jaxb2Marshaller = jaxb2Marshaller;
     this.mdbLinkBaseUrl = mdbLinkBaseUrl;
     this.idPsp = idPsp;
     this.idBrokerPsp = idBrokerPsp;
@@ -82,7 +79,7 @@ public class MbdServiceImpl implements MbdService {
         .map(
             item ->
                 RequestMapper.mapDemandPaymentNoticeRequest(
-                    idPsp, idBrokerPsp, channelId, fiscalCodeEC, jaxb2Marshaller, item))
+                    idPsp, idBrokerPsp, channelId, fiscalCodeEC, item))
         .onErrorMap(
             XmlMappingException.class,
             e -> {
