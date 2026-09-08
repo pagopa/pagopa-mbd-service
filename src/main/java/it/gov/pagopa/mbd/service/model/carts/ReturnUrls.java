@@ -14,4 +14,5 @@ public class ReturnUrls {
   private String returnOkUrl;
   private String returnCancelUrl;
   private String returnErrorUrl;
+  private String returnWaitingUrl;
 }

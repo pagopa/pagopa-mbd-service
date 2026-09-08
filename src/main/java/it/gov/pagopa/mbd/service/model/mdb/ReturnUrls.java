@@ -1,6 +1,7 @@
 package it.gov.pagopa.mbd.service.model.mdb;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -24,4 +25,8 @@ public class ReturnUrls {
   @Schema(example = "https://url3.it", description = "Redirect error URL.")
   @NotBlank
   private String errorUrl;
+
+  @Schema(example = "https://url4.it", description = "Redirect waiting URL.")
+  @Nullable
+  private String waitingUrl;
 }

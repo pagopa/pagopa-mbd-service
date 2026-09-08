@@ -104,6 +104,7 @@ public class RequestMapper {
                   .returnCancelUrl(request.getReturnUrls().getCancelUrl())
                   .returnErrorUrl(request.getReturnUrls().getErrorUrl())
                   .returnOkUrl(request.getReturnUrls().getSuccessUrl())
+                  .returnCancelUrl(request.getReturnUrls().getWaitingUrl())
                   .build())
           .paymentNotices(
               Collections.singletonList(
@@ -118,5 +119,8 @@ public class RequestMapper {
     } catch (Exception e) {
       throw new CartMappingException(e.getMessage(), e);
     }
+  }
+
+  private RequestMapper() {
   }
 }
