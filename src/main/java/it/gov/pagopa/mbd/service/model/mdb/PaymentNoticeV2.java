@@ -1,6 +1,7 @@
 package it.gov.pagopa.mbd.service.model.mdb;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,6 +15,7 @@ import lombok.NoArgsConstructor;
 public class PaymentNoticeV2 {
 
   @NotNull
+  @Valid
   private Debtor debtor;
 
   @Schema(example = "16", description = "MBD amount.")
