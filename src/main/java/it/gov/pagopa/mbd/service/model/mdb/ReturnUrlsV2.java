@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ReturnUrls {
+public class ReturnUrlsV2 {
 
   @Schema(example = "https://url1.it", description = "Redirect success URL.")
   @NotBlank
@@ -24,4 +24,8 @@ public class ReturnUrls {
   @Schema(example = "https://url3.it", description = "Redirect error URL.")
   @NotBlank
   private String errorUrl;
+
+  @Schema(example = "https://url4.it", description = "Redirect waiting URL.")
+  @NotBlank
+  private String waitingUrl;
 }
