@@ -115,7 +115,7 @@ public class ReactiveClient {
         .onErrorMap(e -> new WebClientException(e.getMessage(), e));
   }
 
-  public Mono<PaSendRTV2Request> getPaymentReceipt(String fiscalCode, String iuv) {
+  public Mono<byte []> getPaymentReceipt(String fiscalCode, String iuv) {
 
     return webClient
         .get()
@@ -134,7 +134,7 @@ public class ReactiveClient {
                   ctTransferListPAReceiptV2.getTransfer();
               assertTrue(!ctTransferPAReceiptV2.isEmpty(), "Missing ctTransferPAReceiptV2");
               assertNotNull(ctTransferPAReceiptV2.get(0).getMBDAttachment());
-              return item;
+              return ctTransferPAReceiptV2.get(0).getMBDAttachment();
             })
         .onErrorMap(IllegalArgumentException.class, e -> e)
         .onErrorMap(

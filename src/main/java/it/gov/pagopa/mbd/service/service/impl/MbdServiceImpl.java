@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.oxm.XmlMappingException;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -35,11 +34,8 @@ public class MbdServiceImpl implements MbdService {
   private final Validator validator;
   private final ReactiveClient reactiveSoapClient;
   private final String mdbLinkBaseUrl;
-
   private final String idPsp;
-
   private final String idBrokerPsp;
-
   private final String channelId;
 
   @Autowired
@@ -148,12 +144,7 @@ public class MbdServiceImpl implements MbdService {
                     .header("Content-Type", APPLICATION_JSON_VALUE)
                     .body(
                         GetMdbReceipt.builder()
-                            .content(
-                                item.getReceipt()
-                                    .getTransferList()
-                                    .getTransfer()
-                                    .get(0)
-                                    .getMBDAttachment())
+                            .content(item)
                             .build()));
   }
 }
