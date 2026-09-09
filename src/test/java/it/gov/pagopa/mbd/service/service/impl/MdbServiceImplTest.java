@@ -29,28 +29,16 @@ import reactor.core.publisher.Mono;
 @SpringBootTest
 class MdbServiceImplTest {
 
+  public static final String FISCAL_CODE_EC = "organization_fiscal_code";
+  public static final String NAV = "3000000001";
+
   @MockBean private ReactiveClient reactiveClient;
 
   @Inject private MbdService mbdService;
 
   @Test
   void getMdbShouldReturnResponseEntityOnValidData() throws DatatypeConfigurationException {
-    DemandPaymentNoticeResponse demandPaymentNoticeResponse =
-        DemandPaymentNoticeResponse.builder()
-            .qrCode(
-                CtQrCode.builder().noticeNumber("3000000001").fiscalCode("AAAAAAAAAA01").build())
-            .paymentList(
-                CtPaymentOptionsDescriptionList.builder()
-                    .paymentOptionDescription(
-                        Collections.singletonList(
-                            CtPaymentOptionDescription.builder()
-                                .paymentNote("Note")
-                                .amount(BigDecimal.TEN)
-                                .dueDate(DatatypeFactory.newInstance().newXMLGregorianCalendar())
-                                .options(StAmountOptionPSP.ANY)
-                                .build()))
-                    .build())
-            .build();
+    DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
     demandPaymentNoticeResponse.setOutcome(StOutcome.OK);
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
@@ -59,29 +47,9 @@ class MdbServiceImplTest {
         GetCartResponse.builder().checkoutRedirectUrl("testUrl").build();
     when(reactiveClient.getCart(any())).thenAnswer(item -> Mono.just(getCartResponse));
 
+    GetMbdRequest getMbdRequest = buildGetMbdRequest(44);
     Mono<ResponseEntity> responseEntityMono =
-        mbdService.getMbd(
-            "test",
-            GetMbdRequest.builder()
-                .idCIService("1000")
-                .paymentNotices(
-                    Collections.singletonList(
-                        PaymentNotice.builder()
-                            .amount(1000L)
-                            .documentHash("1".repeat(44))
-                            .email("test@gmail.com")
-                            .fiscalCode("AAAAAAAAAAAAA01")
-                            .lastName("test")
-                            .firstName("test")
-                            .province("RM")
-                            .build()))
-                .returnUrls(
-                    ReturnUrls.builder()
-                        .errorUrl("testUrl")
-                        .successUrl("testUrl")
-                        .cancelUrl("testUrl")
-                        .build())
-                .build());
+        assertDoesNotThrow(() -> mbdService.getMbd(FISCAL_CODE_EC, getMbdRequest));
 
     ResponseEntity<GetCartResponse> responseEntity = responseEntityMono.block();
     assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
@@ -91,22 +59,7 @@ class MdbServiceImplTest {
 
   @Test
   void getMdbShouldReturnKoOnErrorClientCall() throws DatatypeConfigurationException {
-    DemandPaymentNoticeResponse demandPaymentNoticeResponse =
-        DemandPaymentNoticeResponse.builder()
-            .qrCode(
-                CtQrCode.builder().noticeNumber("3000000001").fiscalCode("AAAAAAAAAA01").build())
-            .paymentList(
-                CtPaymentOptionsDescriptionList.builder()
-                    .paymentOptionDescription(
-                        Collections.singletonList(
-                            CtPaymentOptionDescription.builder()
-                                .paymentNote("Note")
-                                .amount(BigDecimal.TEN)
-                                .dueDate(DatatypeFactory.newInstance().newXMLGregorianCalendar())
-                                .options(StAmountOptionPSP.ANY)
-                                .build()))
-                    .build())
-            .build();
+    DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
     demandPaymentNoticeResponse.setOutcome(StOutcome.OK);
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
@@ -114,51 +67,16 @@ class MdbServiceImplTest {
     when(reactiveClient.getCart(any()))
         .thenAnswer(item -> Mono.error(new WebClientException("Error", null)));
 
+    GetMbdRequest getMbdRequest = buildGetMbdRequest(44);
     Mono<ResponseEntity> responseEntityMono =
-        mbdService.getMbd(
-            "test",
-            GetMbdRequest.builder()
-                .idCIService("1000")
-                .paymentNotices(
-                    Collections.singletonList(
-                        PaymentNotice.builder()
-                            .amount(1000L)
-                            .documentHash("1".repeat(44))
-                            .email("test@gmail.com")
-                            .fiscalCode("AAAAAAAAAAAAA01")
-                            .lastName("test")
-                            .firstName("test")
-                            .province("RM")
-                            .build()))
-                .returnUrls(
-                    ReturnUrls.builder()
-                        .errorUrl("testUrl")
-                        .successUrl("testUrl")
-                        .cancelUrl("testUrl")
-                        .build())
-                .build());
-
+        assertDoesNotThrow(() -> mbdService.getMbd(FISCAL_CODE_EC, getMbdRequest));
     assertThrows(AppException.class, responseEntityMono::block);
   }
 
   @Test
-  void getMdbShouldReturnKOOnInvalidData() throws DatatypeConfigurationException {
-    DemandPaymentNoticeResponse demandPaymentNoticeResponse =
-        DemandPaymentNoticeResponse.builder()
-            .qrCode(
-                CtQrCode.builder().noticeNumber("3000000001").fiscalCode("AAAAAAAAAA01").build())
-            .paymentList(
-                CtPaymentOptionsDescriptionList.builder()
-                    .paymentOptionDescription(
-                        Collections.singletonList(
-                            CtPaymentOptionDescription.builder()
-                                .paymentNote("Note")
-                                .amount(BigDecimal.TEN)
-                                .dueDate(DatatypeFactory.newInstance().newXMLGregorianCalendar())
-                                .options(StAmountOptionPSP.ANY)
-                                .build()))
-                    .build())
-            .build();
+  void getMdbShouldReturnKOOnInvalidData_WrongDocumentHashLength()
+      throws DatatypeConfigurationException {
+    DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
     demandPaymentNoticeResponse.setOutcome(StOutcome.OK);
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
@@ -167,38 +85,18 @@ class MdbServiceImplTest {
         GetCartResponse.builder().checkoutRedirectUrl("testUrl").build();
     when(reactiveClient.getCart(any())).thenAnswer(item -> Mono.just(getCartResponse));
 
-    Mono<ResponseEntity> responseEntityMono =
-        mbdService.getMbd(
-            "test",
-            GetMbdRequest.builder()
-                .idCIService("1000")
-                .paymentNotices(
-                    Collections.singletonList(
-                        PaymentNotice.builder()
-                            .amount(1000L)
-                            .documentHash("1".repeat(10))
-                            .email("test@gmail.com")
-                            .fiscalCode("AAAAAAAAAAAAA01")
-                            .lastName("test")
-                            .firstName("test")
-                            .province("RM")
-                            .build()))
-                .returnUrls(
-                    ReturnUrls.builder()
-                        .errorUrl("testUrl")
-                        .successUrl("testUrl")
-                        .cancelUrl("testUrl")
-                        .build())
-                .build());
-
+    GetMbdRequest getMbdRequest = buildGetMbdRequest(10);
+    Mono<ResponseEntity> responseEntityMono = mbdService.getMbd(FISCAL_CODE_EC, getMbdRequest);
     assertThrows(ConstraintViolationException.class, responseEntityMono::block);
   }
 
   @Test
   void getPaymentReceiptsShouldReturnOk() {
     when(reactiveClient.getPaymentReceipt(any(), any()))
-        .thenAnswer(item -> Mono.just("test".getBytes()));
-    ResponseEntity<?> responseEntity = mbdService.getPaymentReceipts("test", "test").block();
+        .thenAnswer(item -> Mono.just(FISCAL_CODE_EC.getBytes()));
+
+    ResponseEntity<?> responseEntity = mbdService.getPaymentReceipts(FISCAL_CODE_EC, NAV).block();
+
     assertNotNull(responseEntity);
     assertTrue(responseEntity.getStatusCode().is2xxSuccessful());
   }
@@ -207,7 +105,48 @@ class MdbServiceImplTest {
   void getPaymentReceiptsShouldReturnKoException() {
     WebClientException error = new WebClientException("Error on test call", null);
     when(reactiveClient.getPaymentReceipt(any(), any())).thenAnswer(item -> Mono.error(error));
-    Mono<ResponseEntity> responseMono = mbdService.getPaymentReceipts("test", "test");
+
+    Mono<ResponseEntity> responseMono = mbdService.getPaymentReceipts(FISCAL_CODE_EC, NAV);
     assertThrows(AppException.class, responseMono::block);
+  }
+
+  private GetMbdRequest buildGetMbdRequest(int documentHashLength) {
+    return GetMbdRequest.builder()
+        .idCIService("1000")
+        .paymentNotices(
+            Collections.singletonList(
+                PaymentNotice.builder()
+                    .amount(1000L)
+                    .documentHash("1".repeat(documentHashLength))
+                    .email("test@gmail.com")
+                    .fiscalCode("JHNDOE00A01B157N")
+                    .lastName("debtor last name")
+                    .firstName("debtor first name")
+                    .province("RM")
+                    .build()))
+        .returnUrls(
+            ReturnUrls.builder()
+                .errorUrl("testUrl")
+                .successUrl("testUrl")
+                .cancelUrl("testUrl")
+                .build())
+        .build();
+  }
+
+  private DemandPaymentNoticeResponse buildDemandResponse() throws DatatypeConfigurationException {
+    return DemandPaymentNoticeResponse.builder()
+        .qrCode(CtQrCode.builder().noticeNumber(NAV).fiscalCode("JHNDOE00A01B157N").build())
+        .paymentList(
+            CtPaymentOptionsDescriptionList.builder()
+                .paymentOptionDescription(
+                    Collections.singletonList(
+                        CtPaymentOptionDescription.builder()
+                            .paymentNote("Note")
+                            .amount(BigDecimal.TEN)
+                            .dueDate(DatatypeFactory.newInstance().newXMLGregorianCalendar())
+                            .options(StAmountOptionPSP.ANY)
+                            .build()))
+                .build())
+        .build();
   }
 }
