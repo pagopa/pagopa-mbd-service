@@ -12,6 +12,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import it.gov.pagopa.mbd.service.exception.WebClientException;
 import it.gov.pagopa.mbd.service.model.carts.CartPaymentNotice;
 import it.gov.pagopa.mbd.service.model.carts.GetCartRequest;
+import it.gov.pagopa.mbd.service.model.carts.GetCartRequestV2;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
 import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeRequest;
 import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeResponse;
@@ -48,7 +49,12 @@ class ReactiveClientTest {
                     .withBody(
 """
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-  <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:common="http://pagopa-api.pagopa.gov.it/xsd/common-types/v1.0.0/" xmlns:nfp="http://pagopa-api.pagopa.gov.it/node/nodeForPsp.xsd">
+  <soapenv:Envelope 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+  xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+  xmlns:common="http://pagopa-api.pagopa.gov.it/xsd/common-types/v1.0.0/" 
+  xmlns:nfp="http://pagopa-api.pagopa.gov.it/node/nodeForPsp.xsd">
     <soapenv:Body>
         <nfp:demandPaymentNoticeResponse>
             <outcome>OK</outcome>
@@ -82,7 +88,12 @@ class ReactiveClientTest {
                     .withBody(
                         """
                                 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-                                  <soapenv:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:common="http://pagopa-api.pagopa.gov.it/xsd/common-types/v1.0.0/" xmlns:nfp="http://pagopa-api.pagopa.gov.it/node/nodeForPsp.xsd">
+                                  <soapenv:Envelope 
+                                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                                  xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+                                  xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+                                  xmlns:common="http://pagopa-api.pagopa.gov.it/xsd/common-types/v1.0.0/" 
+                                  xmlns:nfp="http://pagopa-api.pagopa.gov.it/node/nodeForPsp.xsd">
                                     <soapenv:Body>
                                         <nfp:demandPaymentNoticeResponse>
                                             <outcome>KO</outcome>
@@ -106,7 +117,7 @@ class ReactiveClientTest {
   @Test
   void getCartWithOkResponse() {
     WIRE_MOCK_EXTENSION.stubFor(
-        post("/cart")
+        post("/v1/cart")
             .withHeader("Content-Type", matching(APPLICATION_JSON_VALUE))
             .willReturn(
                 aResponse()
@@ -128,13 +139,51 @@ class ReactiveClientTest {
   @Test
   void getCartWithKOResponse() {
     WIRE_MOCK_EXTENSION.stubFor(
-        post("/cart")
+        post("/v1/cart")
             .withHeader("Content-Type", matching(APPLICATION_JSON_VALUE))
             .willReturn(
                 aResponse().withStatus(500).withHeader("Content-Type", APPLICATION_JSON_VALUE)));
     Mono<GetCartResponse> getCartResponseMono =
         reactiveClient.getCart(
             GetCartRequest.builder()
+                .paymentNotices(Collections.singletonList(CartPaymentNotice.builder().build()))
+                .build());
+    assertThrows(WebClientException.class, getCartResponseMono::block);
+  }
+
+  @SneakyThrows
+  @Test
+  void getCartV2WithOkResponse() {
+    WIRE_MOCK_EXTENSION.stubFor(
+        post("/v2/cart")
+            .withHeader("Content-Type", matching(APPLICATION_JSON_VALUE))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", APPLICATION_JSON_VALUE)
+                    .withBody(
+                        mapper.writeValueAsString(
+                            GetCartResponse.builder().checkoutRedirectUrl("testUrl").build()))));
+    Mono<GetCartResponse> getCartResponseMono =
+        reactiveClient.getCartV2(
+            GetCartRequestV2.builder()
+                .paymentNotices(Collections.singletonList(CartPaymentNotice.builder().build()))
+                .build());
+    GetCartResponse getCartResponse = getCartResponseMono.block();
+    assertNotNull(getCartResponse);
+  }
+
+  @SneakyThrows
+  @Test
+  void getCartV2WithKOResponse() {
+    WIRE_MOCK_EXTENSION.stubFor(
+        post("/v2/cart")
+            .withHeader("Content-Type", matching(APPLICATION_JSON_VALUE))
+            .willReturn(
+                aResponse().withStatus(500).withHeader("Content-Type", APPLICATION_JSON_VALUE)));
+    Mono<GetCartResponse> getCartResponseMono =
+        reactiveClient.getCartV2(
+            GetCartRequestV2.builder()
                 .paymentNotices(Collections.singletonList(CartPaymentNotice.builder().build()))
                 .build());
     assertThrows(WebClientException.class, getCartResponseMono::block);
