@@ -1,6 +1,7 @@
 package it.gov.pagopa.mbd.service.model.mdb;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import it.gov.pagopa.mbd.service.config.ValidUniqueIdentifier;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +18,7 @@ public class Debtor {
   @NotBlank
   private String fullName;
 
-  @NotNull
+  @ValidUniqueIdentifier
   private UniqueIdentifier uniqueIdentifier;
 
   @Schema(example = "mario.rossi@test.test", description = "Debtor mail.")

@@ -29,7 +29,7 @@ public class UniqueIdentifier {
    * Represents the legal entity type. 'F' - Natural Person (Persona Fisica) 'G' - Legal Entity
    * (Persona Giuridica)
    */
-  private enum UniqueIdentifierType {
+  public enum UniqueIdentifierType {
     F,
     G
   }

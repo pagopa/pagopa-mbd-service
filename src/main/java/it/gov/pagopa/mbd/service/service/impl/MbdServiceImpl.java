@@ -10,6 +10,7 @@ import it.gov.pagopa.mbd.service.exception.CartMappingException;
 import it.gov.pagopa.mbd.service.exception.WebClientException;
 import it.gov.pagopa.mbd.service.mapper.RequestMapper;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
+import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
 import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
 import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeResponse;
 import it.gov.pagopa.mbd.service.service.MbdService;
@@ -54,6 +55,9 @@ public class MbdServiceImpl implements MbdService {
     this.channelId = channelId;
   }
 
+    /**
+     * {@inheritDoc}
+     */
   @Override
   public Mono<ResponseEntity> getMbd(String fiscalCodeEC, GetMbdRequest request) {
     HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap<>();
@@ -73,9 +77,11 @@ public class MbdServiceImpl implements MbdService {
               return e;
             })
         .map(
-            item ->
-                RequestMapper.mapDemandPaymentNoticeRequest(
-                    idPsp, idBrokerPsp, channelId, fiscalCodeEC, item))
+            item -> {
+                GetMbdRequestV2 getMbdRequestV2 = RequestMapper.mapGetMbdRequestToGetMbdRequestV2(item);
+                return RequestMapper.mapDemandPaymentNoticeRequest(
+                        idPsp, idBrokerPsp, channelId, fiscalCodeEC, getMbdRequestV2);
+            })
         .onErrorMap(
             XmlMappingException.class,
             e -> {
@@ -120,7 +126,79 @@ public class MbdServiceImpl implements MbdService {
               return ResponseEntity.ok().header(CONTENT_TYPE, APPLICATION_JSON_VALUE).body(item);
             });
   }
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Mono<ResponseEntity> getMbdV2(String fiscalCodeEC, GetMbdRequestV2 request) {
+    HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap<>();
+    return Mono.just(request)
+        .doFirst(
+            () -> {
+              Set<ConstraintViolation<GetMbdRequestV2>> errors = validator.validate(request);
+              if (!errors.isEmpty()) {
+                throw new ConstraintViolationException(errors);
+              }
+            })
+        .onErrorMap(
+            ConstraintViolationException.class,
+            e -> {
+              log.error(
+                  "Encountered an error during demandPaymentNotice Validation: {}", e.getMessage());
+              return e;
+            })
+        .map(
+            item ->
+                RequestMapper.mapDemandPaymentNoticeRequest(
+                    idPsp, idBrokerPsp, channelId, fiscalCodeEC, item))
+        .onErrorMap(
+            XmlMappingException.class,
+            e -> {
+              log.error(
+                  "Encountered an error during demandPaymentNotice Request Mapping: {}",
+                  e.getMessage());
+              return new AppException(AppError.PAYMENT_NOTICE_REQUEST_MAP_ERROR, e);
+            })
+        .flatMap(reactiveSoapClient::demandPaymentNotice)
+        .onErrorMap(
+            WebClientException.class,
+            e -> {
+              log.error("Encountered an error during demandPaymentNotice Call: {}", e.getMessage());
+              return new AppException(AppError.PAYMENT_NOTICE_REQUEST_CALL_ERROR, e);
+            })
+        .map(
+            demandPaymentNoticeResponse -> {
+              hashMap.put("demandPaymentNoticeResponse", demandPaymentNoticeResponse);
+              return RequestMapper.mapCartV2Request(request, demandPaymentNoticeResponse);
+            })
+        .onErrorMap(
+            CartMappingException.class,
+            e -> {
+              log.error("Encountered an error during cart mapping: {}", e.getMessage());
+              return new AppException(AppError.CART_REQUEST_MAP_ERROR, e);
+            })
+        .flatMap(reactiveSoapClient::getCartV2)
+        .onErrorMap(
+            WebClientException.class,
+            e -> {
+              log.error("Encountered an error during getCart Call: {}", e.getMessage());
+              return new AppException(AppError.CART_REQUEST_CALL_ERROR, e);
+            })
+        .map(
+            item -> {
+              String noticeNumber =
+                  hashMap.get("demandPaymentNoticeResponse").getQrCode().getNoticeNumber();
+              item.setNav(noticeNumber);
+              item.setMbdDownloadLink(
+                  StringUtils.joinWith(
+                      "/", mdbLinkBaseUrl, "organizations", fiscalCodeEC, "receipt", noticeNumber));
+              return ResponseEntity.ok().header(CONTENT_TYPE, APPLICATION_JSON_VALUE).body(item);
+            });
+  }
 
+    /**
+     * {@inheritDoc}
+     */
   @Override
   public Mono<ResponseEntity> getPaymentReceipts(String fiscalCode, String nav) {
     return Mono.zip(Mono.just(fiscalCode), Mono.just(nav).map(item -> nav.substring(1)))

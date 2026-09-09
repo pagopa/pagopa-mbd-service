@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ReturnUrls {
+public class CartReturnUrls {
 
   private String returnOkUrl;
   private String returnCancelUrl;

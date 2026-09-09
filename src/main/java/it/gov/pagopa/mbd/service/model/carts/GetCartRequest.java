@@ -14,5 +14,5 @@ public class GetCartRequest {
 
   private String emailNotice;
   private List<CartPaymentNotice> paymentNotices;
-  private ReturnUrls returnUrls;
+  private CartReturnUrls returnUrls;
 }

@@ -1,6 +1,7 @@
 package it.gov.pagopa.mbd.service.model.mdb;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import it.gov.pagopa.mbd.service.util.Constants;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +24,10 @@ public class PaymentNotice {
 
   @Schema(example = "00000000000000000", description = "Debtor fiscal code.")
   @NotBlank
+  @Pattern(
+      regexp = Constants.GENERIC_FISCAL_CODE_REGEX,
+      message =
+          "Debtor fiscal code must be a valid 16-character Italian fiscal code or an 11-digit VAT number.")
   private String fiscalCode;
 
   @Schema(example = "mario.rossi@test.test", description = "Debtor mail.")

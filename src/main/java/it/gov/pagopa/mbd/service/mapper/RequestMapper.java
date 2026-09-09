@@ -5,18 +5,22 @@ import static org.hibernate.validator.internal.util.Contracts.assertTrue;
 
 import it.gov.pagopa.mbd.service.exception.CartMappingException;
 import it.gov.pagopa.mbd.service.model.carts.CartPaymentNotice;
+import it.gov.pagopa.mbd.service.model.carts.CartReturnUrls;
+import it.gov.pagopa.mbd.service.model.carts.CartReturnUrlsV2;
 import it.gov.pagopa.mbd.service.model.carts.GetCartRequest;
 import it.gov.pagopa.mbd.service.model.carts.GetCartRequestV2;
-import it.gov.pagopa.mbd.service.model.carts.ReturnUrls;
-import it.gov.pagopa.mbd.service.model.carts.ReturnUrlsV2;
 import it.gov.pagopa.mbd.service.model.mdb.Debtor;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
+import it.gov.pagopa.mbd.service.model.mdb.PaymentNotice;
 import it.gov.pagopa.mbd.service.model.mdb.PaymentNoticeV2;
+import it.gov.pagopa.mbd.service.model.mdb.ReturnUrlsV2;
+import it.gov.pagopa.mbd.service.model.mdb.UniqueIdentifier;
 import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.CtPaymentOptionDescription;
 import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.CtPaymentOptionsDescriptionList;
 import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeRequest;
 import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeResponse;
+import it.gov.pagopa.mbd.service.util.Constants;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
@@ -90,7 +94,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       return GetCartRequest.builder()
           .emailNotice(request.getPaymentNotices().get(0).getEmail())
           .returnUrls(
-              ReturnUrls.builder()
+              CartReturnUrls.builder()
                   .returnCancelUrl(request.getReturnUrls().getCancelUrl())
                   .returnErrorUrl(request.getReturnUrls().getErrorUrl())
                   .returnOkUrl(request.getReturnUrls().getSuccessUrl())
@@ -126,7 +130,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       return GetCartRequestV2.builder()
           .emailNotice(request.getPaymentNotices().get(0).getDebtor().getEmail())
           .returnUrls(
-              ReturnUrlsV2.builder()
+              CartReturnUrlsV2.builder()
                   .returnCancelUrl(request.getReturnUrls().getCancelUrl())
                   .returnErrorUrl(request.getReturnUrls().getErrorUrl())
                   .returnOkUrl(request.getReturnUrls().getSuccessUrl())
@@ -144,6 +148,51 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           .build();
     } catch (Exception e) {
       throw new CartMappingException(e.getMessage(), e);
+    }
+  }
+
+  public static GetMbdRequestV2 mapGetMbdRequestToGetMbdRequestV2(GetMbdRequest request) {
+    return GetMbdRequestV2.builder()
+        .idCIService(request.getIdCIService())
+        .paymentNotices(
+            request.getPaymentNotices().stream()
+                .map(
+                    paymentNotice ->
+                        PaymentNoticeV2.builder()
+                            .amount(paymentNotice.getAmount())
+                            .province(paymentNotice.getProvince())
+                            .documentHash(paymentNotice.getDocumentHash())
+                            .debtor(buildDebtor(paymentNotice))
+                            .build())
+                .toList())
+        .returnUrls(
+            ReturnUrlsV2.builder()
+                .cancelUrl(request.getReturnUrls().getCancelUrl())
+                .errorUrl(request.getReturnUrls().getErrorUrl())
+                .successUrl(request.getReturnUrls().getSuccessUrl())
+                .build())
+        .build();
+  }
+
+  private static Debtor buildDebtor(PaymentNotice paymentNotice) {
+    return Debtor.builder()
+        .fullName(paymentNotice.getFirstName() + " " + paymentNotice.getLastName())
+        .uniqueIdentifier(
+            UniqueIdentifier.builder()
+                .type(extractUniqueIdentifierType(paymentNotice.getFiscalCode()))
+                .value(paymentNotice.getFiscalCode())
+                .build())
+        .email(paymentNotice.getEmail())
+        .build();
+  }
+
+  private static UniqueIdentifier.UniqueIdentifierType extractUniqueIdentifierType(String fiscalCode) {
+    if (Constants.FISCAL_CODE_PATTERN.matcher(fiscalCode).matches()) {
+      return UniqueIdentifier.UniqueIdentifierType.F;
+    } else if (Constants.VAT_NUMBER_PATTERN.matcher(fiscalCode).matches()) {
+      return UniqueIdentifier.UniqueIdentifierType.G;
+    } else {
+      throw new IllegalArgumentException("Invalid fiscal code or VAT number format");
     }
   }
 
