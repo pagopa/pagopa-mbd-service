@@ -74,7 +74,8 @@ microservice-chart:
     APP_LOG_LEVEL: 'DEBUG'
     DEFAULT_LOGGING_LEVEL: 'INFO'
     DEMAND_PAYMENT_ENDPOINT: 'https://api.uat.platform.pagopa.it/nodo-auth/node-for-psp/v1'
-    CART_ENDPOINT: 'https://api.uat.platform.pagopa.it/checkout/carts-auth/v2/carts'
+    CART_ENDPOINT: 'https://api.uat.platform.pagopa.it/checkout/carts-auth/v1/carts'
+    CART_V2_ENDPOINT: 'https://api.uat.platform.pagopa.it/checkout/carts-auth/v2/carts'
     PAYMENT_RECEIPT_ENDPOINT: 'https://api.uat.platform.pagopa.it/gpd/payments-receipts-service/v1'
     MBD_BASE_URL: 'https://api.dev.platform.pagopa.it/pagopa-mbd-service/v1'
     MBD_ID_PSP: 'AGID_01'
@@ -96,6 +97,7 @@ microservice-chart:
     OTEL_EXPORTER_OTLP_HEADERS: elastic-apm-secret-token
     DEMAND_PAYMENT_SUBKEY: 'apikey-node-for-psp'
     CART_SUBKEY: 'apikey-checkout-carts'
+    CART_V2_SUBKEY: 'apikey-checkout-carts-v2'
     PAYMENT_RECEIPT_SUBKEY: 'apikey-gpd-payments'
   keyvault:
     name: "pagopa-d-itn-ebollo-kv"

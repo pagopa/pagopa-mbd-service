@@ -14,6 +14,9 @@ public class ClientDataConfig {
   @Value("${mbd.client.cart.endpoint}")
   private String getCartEndpoint;
 
+  @Value("${mbd.client.cart.v2.endpoint}")
+  private String getCartV2Endpoint;
+
   @Value("${mbd.client.paymentReceipt.endpoint}")
   private String getPaymentReceiptEndpoint;
 
@@ -22,6 +25,9 @@ public class ClientDataConfig {
 
   @Value("${mbd.client.cart.subscriptionKey}")
   private String getCartSubscriptionKey;
+
+  @Value("${mbd.client.cart.v2.subscriptionKey}")
+  private String getCartV2SubscriptionKey;
 
   @Value("${mbd.client.paymentReceipt.subscriptionKey}")
   private String getPaymentReceiptSubscriptionKey;

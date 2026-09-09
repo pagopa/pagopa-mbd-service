@@ -5,6 +5,7 @@ import static org.hibernate.validator.internal.util.Contracts.assertTrue;
 
 import it.gov.pagopa.mbd.service.exception.WebClientException;
 import it.gov.pagopa.mbd.service.model.carts.GetCartRequest;
+import it.gov.pagopa.mbd.service.model.carts.GetCartRequestV2;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
 import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeRequest;
 import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeResponse;
@@ -26,11 +27,25 @@ import reactor.core.publisher.Mono;
 @Component
 public class ReactiveClient {
 
-  private final WebClient webClient;
-
-  private final ClientDataConfig clientDataConfig;
-
-  private static final String OCP_SUBSCRIPTION_KEY = "ocp-apim-subscription-key";
+    private static final String OCP_SUBSCRIPTION_KEY = "ocp-apim-subscription-key";
+    private static final String DEMAND_PAYMENT_BODY = """
+    <?xml version="1.0" encoding="utf-8"?>
+      <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
+        <Body>
+          <demandPaymentNoticeRequest
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns="http://pagopa-api.pagopa.gov.it/node/nodeForPsp.xsd">
+            <idPSP xmlns="">%s</idPSP>
+            <idBrokerPSP xmlns="">%s</idBrokerPSP>
+            <idChannel xmlns="">%s</idChannel>
+            <idSoggettoServizio xmlns="">%s</idSoggettoServizio>
+            <datiSpecificiServizio xmlns="">%s</datiSpecificiServizio>
+          </demandPaymentNoticeRequest>
+        </Body>
+      </Envelope>""";
+    
+    private final WebClient webClient;
+    private final ClientDataConfig clientDataConfig;
 
   @Autowired
   public ReactiveClient(WebClient webClient, ClientDataConfig clientDataConfig) {
@@ -38,40 +53,32 @@ public class ReactiveClient {
     this.clientDataConfig = clientDataConfig;
   }
 
+    /**
+     * Invokes demandPaymentNotice SOAP Nodo API
+     *
+     * @param request request data for demandPaymentNotice
+     * @return demandPaymentNotice response wrapped in Mono
+     * @throws WebClientException if the request fails or returns KO outcome
+     */
   public Mono<DemandPaymentNoticeResponse> demandPaymentNotice(
-      DemandPaymentNoticeRequest demandPaymentNoticeRequest) {
+      DemandPaymentNoticeRequest request) {
 
-    return webClient
+      String requestBody = String.format(
+              DEMAND_PAYMENT_BODY,
+              request.getIdPSP(),
+              request.getIdBrokerPSP(),
+              request.getIdChannel(),
+              request.getIdSoggettoServizio(),
+              new String(request.getDatiSpecificiServizio())
+      );
+
+      return webClient
         .post()
         .uri(clientDataConfig.getDemandPaymentEndpoint())
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE)
         .header("soapaction", "demandPaymentNotice")
         .header(OCP_SUBSCRIPTION_KEY, clientDataConfig.getDemandPaymentSubscriptionKey())
-        .bodyValue(
-            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
-                + "<Envelope xmlns=\"http://schemas.xmlsoap.org/soap/envelope/\">\n"
-                + "  <Body>\n"
-                + "    <demandPaymentNoticeRequest"
-                + " xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\""
-                + " xmlns=\"http://pagopa-api.pagopa.gov.it/node/nodeForPsp.xsd\">\n"
-                + "      <idPSP xmlns=\"\">"
-                + demandPaymentNoticeRequest.getIdPSP()
-                + "</idPSP>\n"
-                + "      <idBrokerPSP xmlns=\"\">"
-                + demandPaymentNoticeRequest.getIdBrokerPSP()
-                + "</idBrokerPSP>\n"
-                + "      <idChannel xmlns=\"\">"
-                + demandPaymentNoticeRequest.getIdChannel()
-                + "</idChannel>\n"
-                + "      <idSoggettoServizio xmlns=\"\">"
-                + demandPaymentNoticeRequest.getIdSoggettoServizio()
-                + "</idSoggettoServizio>\n"
-                + "      <datiSpecificiServizio xmlns=\"\">"
-                + new String(demandPaymentNoticeRequest.getDatiSpecificiServizio())
-                + "</datiSpecificiServizio>\n"
-                + "    </demandPaymentNoticeRequest>\n"
-                + "  </Body>\n"
-                + "</Envelope>")
+        .bodyValue(requestBody)
         .retrieve()
         .bodyToMono(Envelope.class)
         .map(
@@ -102,6 +109,13 @@ public class ReactiveClient {
         .onErrorMap(e -> new WebClientException(e.getMessage(), e));
   }
 
+    /**
+     * Invokes Checkout POST /cart v1
+     *
+     * @param getCartRequest request body
+     * @return GetCartResponse wrapped in Mono
+     * @throws WebClientException if the request fails
+     */
   public Mono<GetCartResponse> getCart(GetCartRequest getCartRequest) {
 
     return webClient
@@ -115,6 +129,34 @@ public class ReactiveClient {
         .onErrorMap(e -> new WebClientException(e.getMessage(), e));
   }
 
+    /**
+     * Invokes Checkout POST /cart v2
+     *
+     * @param getCartRequest request body
+     * @return GetCartResponse wrapped in Mono
+     * @throws WebClientException if the request fails
+     */
+  public Mono<GetCartResponse> getCartV2(GetCartRequestV2 getCartRequest) {
+
+    return webClient
+        .post()
+        .uri(clientDataConfig.getGetCartV2Endpoint())
+        .header(OCP_SUBSCRIPTION_KEY, clientDataConfig.getGetCartV2SubscriptionKey())
+        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .body(Mono.just(getCartRequest), GetCartRequest.class)
+        .retrieve()
+        .bodyToMono(GetCartResponse.class)
+        .onErrorMap(e -> new WebClientException(e.getMessage(), e));
+  }
+
+    /**
+     * Invokes GPS GET /payment-receipt/{fiscalCode}/{iuv} endpoint to retrieve the payment receipt
+     * 
+     * @param fiscalCode organization fiscal code
+     * @param iuv identificativo univoco versamento
+     * @return Marca da Bollo attachment as byte array wrapped in Mono
+     * @throws WebClientException if the request fails
+     */
   public Mono<byte []> getPaymentReceipt(String fiscalCode, String iuv) {
 
     return webClient

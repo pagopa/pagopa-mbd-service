@@ -9,9 +9,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ReturnUrls {
+public class ReturnUrlsV2 {
 
   private String returnOkUrl;
   private String returnCancelUrl;
   private String returnErrorUrl;
+  private String returnWaitingUrl;
 }
