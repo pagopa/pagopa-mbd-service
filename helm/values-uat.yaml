@@ -97,7 +97,6 @@ microservice-chart:
     OTEL_EXPORTER_OTLP_HEADERS: elastic-apm-secret-token
     DEMAND_PAYMENT_SUBKEY: 'apikey-node-for-psp'
     CART_SUBKEY: 'apikey-checkout-carts'
-    CART_V2_SUBKEY: 'apikey-checkout-carts-v2'
     PAYMENT_RECEIPT_SUBKEY: 'apikey-gpd-payments'
   keyvault:
     name: "pagopa-u-itn-ebollo-kv"

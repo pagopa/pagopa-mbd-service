@@ -141,7 +141,7 @@ public class ReactiveClient {
     return webClient
         .post()
         .uri(clientDataConfig.getGetCartV2Endpoint())
-        .header(OCP_SUBSCRIPTION_KEY, clientDataConfig.getGetCartV2SubscriptionKey())
+        .header(OCP_SUBSCRIPTION_KEY, clientDataConfig.getGetCartSubscriptionKey())
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .body(Mono.just(getCartRequest), GetCartRequest.class)
         .retrieve()
