@@ -14,12 +14,11 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.servers.ServerVariable;
 import io.swagger.v3.oas.models.servers.ServerVariables;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+
+import java.util.*;
+
 import org.springdoc.core.customizers.OpenApiCustomizer;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,24 +34,6 @@ public class OpenApiConfig {
       @Value("${info.application.description}") String appDescription,
       @Value("${info.application.version}") String appVersion) {
     return new OpenAPI()
-        .servers(
-            List.of(
-                new Server().url("http://localhost:8080"),
-                new Server()
-                    .url("https://{host}{basePath}")
-                    .variables(
-                        new ServerVariables()
-                            .addServerVariable(
-                                "host",
-                                new ServerVariable()
-                                    ._enum(
-                                        List.of(
-                                            "api.dev.platform.pagopa.it",
-                                            "api.uat.platform.pagopa.it",
-                                            "api.platform.pagopa.it"))
-                                    ._default("api.dev.platform.pagopa.it"))
-                            .addServerVariable(
-                                "basePath", new ServerVariable()._default(BASE_PATH)))))
         .components(
             new Components()
                 .addSecuritySchemes(
@@ -64,10 +45,78 @@ public class OpenApiConfig {
                         .in(SecurityScheme.In.HEADER)))
         .info(
             new Info()
-                .title(appName)
+                .title("EBollo 2.0 - Service for partner")
                 .version(appVersion)
                 .description(appDescription)
                 .termsOfService("https://www.pagopa.gov.it/"));
+  }
+
+  @Bean
+  public GroupedOpenApi apiV1() {
+    List<Server> serverInfo = new ArrayList<>();
+
+    serverInfo.add(createServer(".uat", "pagopa-mbd-service", "v1", "EBollo 2.0 Test environment"));
+    serverInfo.add(createServer("", "pagopa-mbd-service", "v1", "EBollo 2.0 Production Environment"));
+
+    return GroupedOpenApi.builder()
+        .group("v1")
+        .displayName("Marca da Bollo Digitale v1")
+        .pathsToMatch("/v1/**")
+        .addOpenApiCustomizer(removeVersionFromPaths("/v1"))
+        .addOpenApiCustomizer(customizeServer(serverInfo))
+        .build();
+  }
+
+  @Bean
+  public GroupedOpenApi apiV2() {
+    List<Server> serverInfo = new ArrayList<>();
+
+    serverInfo.add(createServer(".uat", "pagopa-mbd-service", "v2", "EBollo 2.0 Test environment"));
+    serverInfo.add(createServer("", "pagopa-mbd-service", "v2", "EBollo 2.0 Production Environment"));
+    return GroupedOpenApi.builder()
+        .group("v2")
+        .displayName("Marca da Bollo Digitale v2")
+        .pathsToMatch("/v2/**")
+        .addOpenApiCustomizer(removeVersionFromPaths("/v2"))
+        .addOpenApiCustomizer(customizeServer(serverInfo))
+        .build();
+  }
+
+  /**
+   * Removes the version prefix (e.g. "/v1") from the documented paths and instead appends it to
+   * the server URLs, so that the path shown in the swagger does not contain the version, while
+   * the server url does.
+   */
+  private OpenApiCustomizer removeVersionFromPaths(String versionPrefix) {
+    return openApi -> {
+      Paths oldPaths = openApi.getPaths();
+      if (oldPaths != null) {
+        Paths newPaths = new Paths();
+        oldPaths.forEach(
+            (path, pathItem) -> {
+              String newPath =
+                  path.startsWith(versionPrefix) ? path.substring(versionPrefix.length()) : path;
+              if (newPath.isEmpty()) {
+                newPath = "/";
+              }
+              newPaths.addPathItem(newPath, pathItem);
+            });
+        openApi.setPaths(newPaths);
+      }
+
+      Optional.ofNullable(openApi.getServers())
+          .orElse(Collections.emptyList())
+          .forEach(
+              server -> {
+                if (server.getUrl() != null) {
+                  server.setUrl(server.getUrl() + versionPrefix);
+                }
+                Optional.ofNullable(server.getVariables())
+                    .map(variables -> variables.get("basePath"))
+                    .ifPresent(
+                        basePath -> basePath.setDefault(basePath.getDefault() + versionPrefix));
+              });
+    };
   }
 
   @Bean
@@ -144,4 +193,25 @@ public class OpenApiConfig {
                                                       "This header identifies the call"))));
                 });
   }
+
+    private Server createServer(String env, String service, String version, String description) {
+        String baseUrl = "https://api%s.platform.pagopa.it/%s";
+        String url = String.format(baseUrl, env, service);
+        if (version != null) {
+            url = String.format("%s/%s", url, version);
+        }
+        Server server = new Server();
+        server.setUrl(url);
+        server.setDescription(description);
+        return server;
+    }
+
+    private OpenApiCustomizer customizeServer(List<Server> serverInfo) {
+        return openApi -> {
+            if (openApi.getPaths() == null) return;
+
+            // set servers
+            openApi.setServers(serverInfo);
+        };
+    }
 }
