@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import reactor.core.publisher.Mono;
 
 @SpringBootTest
@@ -41,11 +42,11 @@ class ReactiveClientTest {
   void demandPaymentNoticeShouldReturnOk() {
     WIRE_MOCK_EXTENSION.stubFor(
         post("/demand")
-            .withHeader("Content-Type", matching(APPLICATION_XML_VALUE))
+            .withHeader(HttpHeaders.CONTENT_TYPE, matching(APPLICATION_XML_VALUE))
             .willReturn(
                 aResponse()
                     .withStatus(200)
-                    .withHeader("Content-Type", APPLICATION_XML_VALUE)
+                    .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_XML_VALUE)
                     .withBody(
 """
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
@@ -80,11 +81,11 @@ class ReactiveClientTest {
   void demandPaymentNoticeShouldReturnKO() {
     WIRE_MOCK_EXTENSION.stubFor(
         post("/demand")
-            .withHeader("Content-Type", matching(APPLICATION_XML_VALUE))
+            .withHeader(HttpHeaders.CONTENT_TYPE, matching(APPLICATION_XML_VALUE))
             .willReturn(
                 aResponse()
                     .withStatus(200)
-                    .withHeader("Content-Type", APPLICATION_XML_VALUE)
+                    .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_XML_VALUE)
                     .withBody(
                         """
                                 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
@@ -118,11 +119,11 @@ class ReactiveClientTest {
   void getCartWithOkResponse() {
     WIRE_MOCK_EXTENSION.stubFor(
         post("/v1/cart")
-            .withHeader("Content-Type", matching(APPLICATION_JSON_VALUE))
+            .withHeader(HttpHeaders.CONTENT_TYPE, matching(APPLICATION_JSON_VALUE))
             .willReturn(
                 aResponse()
                     .withStatus(200)
-                    .withHeader("Content-Type", APPLICATION_JSON_VALUE)
+                    .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
                     .withBody(
                         mapper.writeValueAsString(
                             GetCartResponse.builder().checkoutRedirectUrl("testUrl").build()))));
@@ -140,9 +141,11 @@ class ReactiveClientTest {
   void getCartWithKOResponse() {
     WIRE_MOCK_EXTENSION.stubFor(
         post("/v1/cart")
-            .withHeader("Content-Type", matching(APPLICATION_JSON_VALUE))
+            .withHeader(HttpHeaders.CONTENT_TYPE, matching(APPLICATION_JSON_VALUE))
             .willReturn(
-                aResponse().withStatus(500).withHeader("Content-Type", APPLICATION_JSON_VALUE)));
+                aResponse()
+                    .withStatus(500)
+                    .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)));
     Mono<GetCartResponse> getCartResponseMono =
         reactiveClient.getCart(
             GetCartRequest.builder()
@@ -156,11 +159,11 @@ class ReactiveClientTest {
   void getCartV2WithOkResponse() {
     WIRE_MOCK_EXTENSION.stubFor(
         post("/v2/cart")
-            .withHeader("Content-Type", matching(APPLICATION_JSON_VALUE))
+            .withHeader(HttpHeaders.CONTENT_TYPE, matching(APPLICATION_JSON_VALUE))
             .willReturn(
                 aResponse()
                     .withStatus(200)
-                    .withHeader("Content-Type", APPLICATION_JSON_VALUE)
+                    .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)
                     .withBody(
                         mapper.writeValueAsString(
                             GetCartResponse.builder().checkoutRedirectUrl("testUrl").build()))));
@@ -178,9 +181,11 @@ class ReactiveClientTest {
   void getCartV2WithKOResponse() {
     WIRE_MOCK_EXTENSION.stubFor(
         post("/v2/cart")
-            .withHeader("Content-Type", matching(APPLICATION_JSON_VALUE))
+            .withHeader(HttpHeaders.CONTENT_TYPE, matching(APPLICATION_JSON_VALUE))
             .willReturn(
-                aResponse().withStatus(500).withHeader("Content-Type", APPLICATION_JSON_VALUE)));
+                aResponse()
+                    .withStatus(500)
+                    .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE)));
     Mono<GetCartResponse> getCartResponseMono =
         reactiveClient.getCartV2(
             GetCartRequestV2.builder()
@@ -196,7 +201,7 @@ class ReactiveClientTest {
             .willReturn(
                 aResponse()
                     .withStatus(200)
-                    .withHeader("Content-Type", APPLICATION_XML_VALUE)
+                    .withHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_XML_VALUE)
                     .withBody(
 """
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
