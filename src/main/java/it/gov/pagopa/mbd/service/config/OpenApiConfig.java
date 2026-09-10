@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
-  public static final String BASE_PATH = "/pagopa-mbd-service/v1";
+  public static final String BASE_PATH = "/pagopa-mbd-service";
 
   @Bean
   public OpenAPI customOpenAPI(
