@@ -113,18 +113,17 @@ public class LoggingAspect {
       var requestId = UUID.randomUUID().toString();
       MDC.put(REQUEST_ID, requestId);
     }
-    Map<String, String> params = getParams(joinPoint);
-    MDC.put(ARGS, params.toString());
+    //    Map<String, String> params = getParams(joinPoint);
+    //    MDC.put(ARGS, params.toString());
 
-    log.info("Invoking API operation {} - args: {}", joinPoint.getSignature().getName(), params);
+    log.info("Invoking API operation {}", joinPoint.getSignature().getName());
 
     Object result = joinPoint.proceed();
 
     MDC.put(STATUS, "OK");
     // MDC.put(CODE, String.valueOf(httpResponse.getStatus()));
     MDC.put(RESPONSE_TIME, getExecutionTime());
-    log.info(
-        "Successful API operation {} - result: {}", joinPoint.getSignature().getName(), result);
+    log.info("Successful API operation {}", joinPoint.getSignature().getName());
     MDC.remove(STATUS);
     MDC.remove(CODE);
     MDC.remove(RESPONSE_TIME);
