@@ -92,12 +92,13 @@ public class MbdController {
       value = "/v1/organizations/{organization-fiscal-code}/mbd",
       produces = MediaType.APPLICATION_JSON_VALUE)
   @Deprecated(forRemoval = true)
-  public Mono<ResponseEntity> getMdb(
+  public Mono<ResponseEntity<?>> getMdb(
       @PathVariable("organization-fiscal-code") @Parameter(description = "Organization fiscal code")
           String organizationFiscalCode,
       @RequestBody GetMbdRequest request) {
     return mdbService
         .getMbd(organizationFiscalCode, request)
+        .<ResponseEntity<?>>map(ResponseEntity::ok)
         .onErrorResume(
             e -> {
               if (e instanceof ConstraintViolationException) {
@@ -176,12 +177,13 @@ public class MbdController {
   @PostMapping(
       value = "/v2/organizations/{organization-fiscal-code}/mbd",
       produces = MediaType.APPLICATION_JSON_VALUE)
-  public Mono<ResponseEntity> getMdbV2(
+  public Mono<ResponseEntity<?>> getMdbV2(
       @PathVariable("organization-fiscal-code") @Parameter(description = "Organization fiscal code")
           String organizationFiscalCode,
       @RequestBody GetMbdRequestV2 request) {
     return mdbService
         .getMbdV2(organizationFiscalCode, request)
+        .<ResponseEntity<?>>map(ResponseEntity::ok)
         .onErrorResume(
             e -> {
               if (e instanceof ConstraintViolationException) {
@@ -272,13 +274,16 @@ public class MbdController {
       })
   @GetMapping(
       value = "/v1/organizations/{organization-fiscal-code}/receipt/{nav}",
-      produces = MediaType.APPLICATION_XML_VALUE)
+      produces = MediaType.APPLICATION_JSON_VALUE)
   @Deprecated(forRemoval = true)
-  public Mono<ResponseEntity> getPaymentReceipts(
+  public Mono<ResponseEntity<GetMdbReceipt>> getPaymentReceipts(
       @PathVariable("organization-fiscal-code") @Parameter(description = "Organization fiscal code")
           String organizationFiscalCode,
       @PathVariable("nav") @Parameter(description = "Notice number") String nav) {
-    return mdbService.getPaymentReceipts(organizationFiscalCode, nav).onErrorResume(Mono::error);
+    return mdbService
+        .getPaymentReceipts(organizationFiscalCode, nav)
+        .map(ResponseEntity::ok)
+        .onErrorResume(Mono::error);
   }
 
   /**
@@ -346,11 +351,14 @@ public class MbdController {
       })
   @GetMapping(
       value = "/v2/organizations/{organization-fiscal-code}/noticeNumbers/{nav}/mbd",
-      produces = MediaType.APPLICATION_XML_VALUE)
-  public Mono<ResponseEntity> getPaymentReceiptsV2(
+      produces = MediaType.APPLICATION_JSON_VALUE)
+  public Mono<ResponseEntity<GetMdbReceipt>> getPaymentReceiptsV2(
       @PathVariable("organization-fiscal-code") @Parameter(description = "Organization fiscal code")
           String organizationFiscalCode,
       @PathVariable("nav") @Parameter(description = "Notice number") String nav) {
-    return mdbService.getPaymentReceipts(organizationFiscalCode, nav).onErrorResume(Mono::error);
+    return mdbService
+        .getPaymentReceipts(organizationFiscalCode, nav)
+        .map(ResponseEntity::ok)
+        .onErrorResume(Mono::error);
   }
 }

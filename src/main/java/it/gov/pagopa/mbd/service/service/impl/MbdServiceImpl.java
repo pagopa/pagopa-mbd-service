@@ -1,14 +1,12 @@
 package it.gov.pagopa.mbd.service.service.impl;
 
-import static org.apache.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-
 import it.gov.pagopa.mbd.service.client.ReactiveClient;
 import it.gov.pagopa.mbd.service.exception.AppError;
 import it.gov.pagopa.mbd.service.exception.AppException;
 import it.gov.pagopa.mbd.service.exception.CartMappingException;
 import it.gov.pagopa.mbd.service.exception.WebClientException;
 import it.gov.pagopa.mbd.service.mapper.RequestMapper;
+import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
 import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
@@ -23,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.oxm.XmlMappingException;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -33,6 +30,7 @@ import reactor.core.publisher.Mono;
 public class MbdServiceImpl implements MbdService {
 
   public static final String DEMAND_PAYMENT_NOTICE_RESPONSE_KEY = "demandPaymentNoticeResponse";
+
   private final Validator validator;
   private final ReactiveClient reactiveSoapClient;
   private final String mdbLinkBaseUrl;
@@ -58,7 +56,7 @@ public class MbdServiceImpl implements MbdService {
 
   /** {@inheritDoc} */
   @Override
-  public Mono<ResponseEntity> getMbd(String fiscalCodeEC, GetMbdRequest request) {
+  public Mono<GetCartResponse> getMbd(String fiscalCodeEC, GetMbdRequest request) {
     HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap<>();
     return Mono.just(request)
         .doFirst(
@@ -123,13 +121,13 @@ public class MbdServiceImpl implements MbdService {
               item.setMbdDownloadLink(
                   StringUtils.joinWith(
                       "/", mdbLinkBaseUrl, "organizations", fiscalCodeEC, "receipt", noticeNumber));
-              return ResponseEntity.ok().header(CONTENT_TYPE, APPLICATION_JSON_VALUE).body(item);
+              return item;
             });
   }
 
   /** {@inheritDoc} */
   @Override
-  public Mono<ResponseEntity> getMbdV2(String fiscalCodeEC, GetMbdRequestV2 request) {
+  public Mono<GetCartResponse> getMbdV2(String fiscalCodeEC, GetMbdRequestV2 request) {
     HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap<>();
     return Mono.just(request)
         .doFirst(
@@ -191,13 +189,13 @@ public class MbdServiceImpl implements MbdService {
               item.setMbdDownloadLink(
                   StringUtils.joinWith(
                       "/", mdbLinkBaseUrl, "organizations", fiscalCodeEC, "receipt", noticeNumber));
-              return ResponseEntity.ok().header(CONTENT_TYPE, APPLICATION_JSON_VALUE).body(item);
+              return item;
             });
   }
 
   /** {@inheritDoc} */
   @Override
-  public Mono<ResponseEntity> getPaymentReceipts(String fiscalCode, String nav) {
+  public Mono<GetMdbReceipt> getPaymentReceipts(String fiscalCode, String nav) {
     return Mono.zip(Mono.just(fiscalCode), Mono.just(nav).map(item -> nav.substring(1)))
         .flatMap(tuple -> reactiveSoapClient.getPaymentReceipt(tuple.getT1(), tuple.getT2()))
         .onErrorMap(
@@ -213,10 +211,6 @@ public class MbdServiceImpl implements MbdService {
               log.error("Encountered an error extracting receipt content: {}", e.getMessage());
               return new AppException(AppError.PAYMENT_RECEIPTS_CALL_ERROR, e);
             })
-        .map(
-            item ->
-                ResponseEntity.ok()
-                    .header("Content-Type", APPLICATION_JSON_VALUE)
-                    .body(GetMdbReceipt.builder().content(item).build()));
+        .map(item -> GetMdbReceipt.builder().content(item).build());
   }
 }
