@@ -32,6 +32,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class MbdServiceImpl implements MbdService {
 
+  public static final String DEMAND_PAYMENT_NOTICE_RESPONSE_KEY = "demandPaymentNoticeResponse";
   private final Validator validator;
   private final ReactiveClient reactiveSoapClient;
   private final String mdbLinkBaseUrl;
@@ -55,9 +56,7 @@ public class MbdServiceImpl implements MbdService {
     this.channelId = channelId;
   }
 
-    /**
-     * {@inheritDoc}
-     */
+  /** {@inheritDoc} */
   @Override
   public Mono<ResponseEntity> getMbd(String fiscalCodeEC, GetMbdRequest request) {
     HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap<>();
@@ -78,9 +77,10 @@ public class MbdServiceImpl implements MbdService {
             })
         .map(
             item -> {
-                GetMbdRequestV2 getMbdRequestV2 = RequestMapper.mapGetMbdRequestToGetMbdRequestV2(item);
-                return RequestMapper.mapDemandPaymentNoticeRequest(
-                        idPsp, idBrokerPsp, channelId, fiscalCodeEC, getMbdRequestV2);
+              GetMbdRequestV2 getMbdRequestV2 =
+                  RequestMapper.mapGetMbdRequestToGetMbdRequestV2(item);
+              return RequestMapper.mapDemandPaymentNoticeRequest(
+                  idPsp, idBrokerPsp, channelId, fiscalCodeEC, getMbdRequestV2);
             })
         .onErrorMap(
             XmlMappingException.class,
@@ -99,7 +99,7 @@ public class MbdServiceImpl implements MbdService {
             })
         .map(
             demandPaymentNoticeResponse -> {
-              hashMap.put("demandPaymentNoticeResponse", demandPaymentNoticeResponse);
+              hashMap.put(DEMAND_PAYMENT_NOTICE_RESPONSE_KEY, demandPaymentNoticeResponse);
               return RequestMapper.mapCartRequest(request, demandPaymentNoticeResponse);
             })
         .onErrorMap(
@@ -118,7 +118,7 @@ public class MbdServiceImpl implements MbdService {
         .map(
             item -> {
               String noticeNumber =
-                  hashMap.get("demandPaymentNoticeResponse").getQrCode().getNoticeNumber();
+                  hashMap.get(DEMAND_PAYMENT_NOTICE_RESPONSE_KEY).getQrCode().getNoticeNumber();
               item.setNav(noticeNumber);
               item.setMbdDownloadLink(
                   StringUtils.joinWith(
@@ -126,11 +126,10 @@ public class MbdServiceImpl implements MbdService {
               return ResponseEntity.ok().header(CONTENT_TYPE, APPLICATION_JSON_VALUE).body(item);
             });
   }
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Mono<ResponseEntity> getMbdV2(String fiscalCodeEC, GetMbdRequestV2 request) {
+
+  /** {@inheritDoc} */
+  @Override
+  public Mono<ResponseEntity> getMbdV2(String fiscalCodeEC, GetMbdRequestV2 request) {
     HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap<>();
     return Mono.just(request)
         .doFirst(
@@ -168,7 +167,7 @@ public class MbdServiceImpl implements MbdService {
             })
         .map(
             demandPaymentNoticeResponse -> {
-              hashMap.put("demandPaymentNoticeResponse", demandPaymentNoticeResponse);
+              hashMap.put(DEMAND_PAYMENT_NOTICE_RESPONSE_KEY, demandPaymentNoticeResponse);
               return RequestMapper.mapCartV2Request(request, demandPaymentNoticeResponse);
             })
         .onErrorMap(
@@ -187,7 +186,7 @@ public class MbdServiceImpl implements MbdService {
         .map(
             item -> {
               String noticeNumber =
-                  hashMap.get("demandPaymentNoticeResponse").getQrCode().getNoticeNumber();
+                  hashMap.get(DEMAND_PAYMENT_NOTICE_RESPONSE_KEY).getQrCode().getNoticeNumber();
               item.setNav(noticeNumber);
               item.setMbdDownloadLink(
                   StringUtils.joinWith(
@@ -196,9 +195,7 @@ public class MbdServiceImpl implements MbdService {
             });
   }
 
-    /**
-     * {@inheritDoc}
-     */
+  /** {@inheritDoc} */
   @Override
   public Mono<ResponseEntity> getPaymentReceipts(String fiscalCode, String nav) {
     return Mono.zip(Mono.just(fiscalCode), Mono.just(nav).map(item -> nav.substring(1)))
@@ -220,9 +217,6 @@ public class MbdServiceImpl implements MbdService {
             item ->
                 ResponseEntity.ok()
                     .header("Content-Type", APPLICATION_JSON_VALUE)
-                    .body(
-                        GetMdbReceipt.builder()
-                            .content(item)
-                            .build()));
+                    .body(GetMdbReceipt.builder().content(item).build()));
   }
 }

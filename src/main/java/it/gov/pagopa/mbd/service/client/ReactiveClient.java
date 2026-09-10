@@ -27,8 +27,9 @@ import reactor.core.publisher.Mono;
 @Component
 public class ReactiveClient {
 
-    private static final String OCP_SUBSCRIPTION_KEY = "ocp-apim-subscription-key";
-    private static final String DEMAND_PAYMENT_BODY = """
+  private static final String OCP_SUBSCRIPTION_KEY = "ocp-apim-subscription-key";
+  private static final String DEMAND_PAYMENT_BODY =
+      """
     <?xml version="1.0" encoding="utf-8"?>
       <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
         <Body>
@@ -43,9 +44,9 @@ public class ReactiveClient {
           </demandPaymentNoticeRequest>
         </Body>
       </Envelope>""";
-    
-    private final WebClient webClient;
-    private final ClientDataConfig clientDataConfig;
+
+  private final WebClient webClient;
+  private final ClientDataConfig clientDataConfig;
 
   @Autowired
   public ReactiveClient(WebClient webClient, ClientDataConfig clientDataConfig) {
@@ -53,26 +54,25 @@ public class ReactiveClient {
     this.clientDataConfig = clientDataConfig;
   }
 
-    /**
-     * Invokes demandPaymentNotice SOAP Nodo API
-     *
-     * @param request request data for demandPaymentNotice
-     * @return demandPaymentNotice response wrapped in Mono
-     * @throws WebClientException if the request fails or returns KO outcome
-     */
-  public Mono<DemandPaymentNoticeResponse> demandPaymentNotice(
-      DemandPaymentNoticeRequest request) {
+  /**
+   * Invokes demandPaymentNotice SOAP Nodo API
+   *
+   * @param request request data for demandPaymentNotice
+   * @return demandPaymentNotice response wrapped in Mono
+   * @throws WebClientException if the request fails or returns KO outcome
+   */
+  public Mono<DemandPaymentNoticeResponse> demandPaymentNotice(DemandPaymentNoticeRequest request) {
 
-      String requestBody = String.format(
-              DEMAND_PAYMENT_BODY,
-              request.getIdPSP(),
-              request.getIdBrokerPSP(),
-              request.getIdChannel(),
-              request.getIdSoggettoServizio(),
-              new String(request.getDatiSpecificiServizio())
-      );
+    String requestBody =
+        String.format(
+            DEMAND_PAYMENT_BODY,
+            request.getIdPSP(),
+            request.getIdBrokerPSP(),
+            request.getIdChannel(),
+            request.getIdSoggettoServizio(),
+            new String(request.getDatiSpecificiServizio()));
 
-      return webClient
+    return webClient
         .post()
         .uri(clientDataConfig.getDemandPaymentEndpoint())
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE)
@@ -109,13 +109,13 @@ public class ReactiveClient {
         .onErrorMap(e -> new WebClientException(e.getMessage(), e));
   }
 
-    /**
-     * Invokes Checkout POST /cart v1
-     *
-     * @param getCartRequest request body
-     * @return GetCartResponse wrapped in Mono
-     * @throws WebClientException if the request fails
-     */
+  /**
+   * Invokes Checkout POST /cart v1
+   *
+   * @param getCartRequest request body
+   * @return GetCartResponse wrapped in Mono
+   * @throws WebClientException if the request fails
+   */
   public Mono<GetCartResponse> getCart(GetCartRequest getCartRequest) {
 
     return webClient
@@ -129,13 +129,13 @@ public class ReactiveClient {
         .onErrorMap(e -> new WebClientException(e.getMessage(), e));
   }
 
-    /**
-     * Invokes Checkout POST /cart v2
-     *
-     * @param getCartRequest request body
-     * @return GetCartResponse wrapped in Mono
-     * @throws WebClientException if the request fails
-     */
+  /**
+   * Invokes Checkout POST /cart v2
+   *
+   * @param getCartRequest request body
+   * @return GetCartResponse wrapped in Mono
+   * @throws WebClientException if the request fails
+   */
   public Mono<GetCartResponse> getCartV2(GetCartRequestV2 getCartRequest) {
 
     return webClient
@@ -149,15 +149,15 @@ public class ReactiveClient {
         .onErrorMap(e -> new WebClientException(e.getMessage(), e));
   }
 
-    /**
-     * Invokes GPS GET /payment-receipt/{fiscalCode}/{iuv} endpoint to retrieve the payment receipt
-     * 
-     * @param fiscalCode organization fiscal code
-     * @param iuv identificativo univoco versamento
-     * @return Marca da Bollo attachment as byte array wrapped in Mono
-     * @throws WebClientException if the request fails
-     */
-  public Mono<byte []> getPaymentReceipt(String fiscalCode, String iuv) {
+  /**
+   * Invokes GPS GET /payment-receipt/{fiscalCode}/{iuv} endpoint to retrieve the payment receipt
+   *
+   * @param fiscalCode organization fiscal code
+   * @param iuv identificativo univoco versamento
+   * @return Marca da Bollo attachment as byte array wrapped in Mono
+   * @throws WebClientException if the request fails
+   */
+  public Mono<byte[]> getPaymentReceipt(String fiscalCode, String iuv) {
 
     return webClient
         .get()

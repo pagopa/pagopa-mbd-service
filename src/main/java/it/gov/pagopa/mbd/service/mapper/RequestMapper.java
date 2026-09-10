@@ -186,7 +186,8 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         .build();
   }
 
-  private static UniqueIdentifier.UniqueIdentifierType extractUniqueIdentifierType(String fiscalCode) {
+  private static UniqueIdentifier.UniqueIdentifierType extractUniqueIdentifierType(
+      String fiscalCode) {
     if (Constants.FISCAL_CODE_PATTERN.matcher(fiscalCode).matches()) {
       return UniqueIdentifier.UniqueIdentifierType.F;
     } else if (Constants.VAT_NUMBER_PATTERN.matcher(fiscalCode).matches()) {

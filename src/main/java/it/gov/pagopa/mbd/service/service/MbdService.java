@@ -5,9 +5,7 @@ import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
 import org.springframework.http.ResponseEntity;
 import reactor.core.publisher.Mono;
 
-/**
- * Service for Marca da Bollo business logic
- */
+/** Service for Marca da Bollo business logic */
 public interface MbdService {
 
   /**
@@ -15,7 +13,8 @@ public interface MbdService {
    *
    * @param fiscalCodeEC organization fiscal code
    * @param request data to create the debt position and pay the Marca da Bollo
-   * @return a Mono of ResponseEntity containing the redirect url for payment and the redirect url for retrieving Marca da Bollo
+   * @return a Mono of ResponseEntity containing the redirect url for payment and the redirect url
+   *     for retrieving Marca da Bollo
    */
   Mono<ResponseEntity> getMbd(String fiscalCodeEC, GetMbdRequest request);
 
@@ -24,12 +23,14 @@ public interface MbdService {
    *
    * @param fiscalCodeEC organization fiscal code
    * @param request data to create the debt position and pay the Marca da Bollo
-   * @return a Mono of ResponseEntity containing the redirect url for payment and the redirect url for retrieving Marca da Bollo
+   * @return a Mono of ResponseEntity containing the redirect url for payment and the redirect url
+   *     for retrieving Marca da Bollo
    */
   Mono<ResponseEntity> getMbdV2(String fiscalCodeEC, GetMbdRequestV2 request);
 
   /**
    * Retrieves the Marca da Bollo receipts for the provided fiscal code and nav
+   *
    * @param fiscalCode organization fiscal code
    * @param nav notice number of the pay debt position
    * @return a Mono of ResponseEntity containing the Marca da Bollo receipt

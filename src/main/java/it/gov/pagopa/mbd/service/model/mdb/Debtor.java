@@ -19,9 +19,7 @@ public class Debtor {
   @NotBlank
   private String fullName;
 
-  @ValidUniqueIdentifier
-  @Valid
-  private UniqueIdentifier uniqueIdentifier;
+  @ValidUniqueIdentifier @Valid private UniqueIdentifier uniqueIdentifier;
 
   @Schema(example = "mario.rossi@test.test", description = "Debtor mail.")
   @NotBlank

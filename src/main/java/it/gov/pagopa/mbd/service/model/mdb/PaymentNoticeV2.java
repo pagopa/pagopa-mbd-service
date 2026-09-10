@@ -14,9 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PaymentNoticeV2 {
 
-  @NotNull
-  @Valid
-  private Debtor debtor;
+  @NotNull @Valid private Debtor debtor;
 
   @Schema(example = "16", description = "MBD amount.")
   @NotNull

@@ -194,7 +194,8 @@ class MdbServiceImplTest {
 
   @Test
   void getMdbV2_KO_ErrorMappingDemandResponseToCartRequest() {
-    DemandPaymentNoticeResponse demandPaymentNoticeResponse = DemandPaymentNoticeResponse.builder()
+    DemandPaymentNoticeResponse demandPaymentNoticeResponse =
+        DemandPaymentNoticeResponse.builder()
             .qrCode(CtQrCode.builder().noticeNumber(NAV).fiscalCode("JHNDOE00A01B157N").build())
             .build();
     when(reactiveClient.demandPaymentNotice(any()))
