@@ -3,6 +3,7 @@ package it.gov.pagopa.mbd.service.client;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.hibernate.validator.internal.util.Contracts.assertTrue;
 
+import it.gov.pagopa.mbd.service.exception.DemandPaymentNoticeKOException;
 import it.gov.pagopa.mbd.service.exception.WebClientException;
 import it.gov.pagopa.mbd.service.model.carts.GetCartRequest;
 import it.gov.pagopa.mbd.service.model.carts.GetCartRequestV2;
@@ -87,22 +88,8 @@ public class ReactiveClient {
                   || item.getBody().getDemandPaymentNoticeResponse() == null
                   || StOutcome.KO.equals(
                       item.getBody().getDemandPaymentNoticeResponse().getOutcome())) {
-                throw new RuntimeException(
-                    "Encountered KO while calling demandPayment "
-                        + (item.getBody() != null
-                                && item.getBody().getDemandPaymentNoticeResponse() != null
-                                && item.getBody().getDemandPaymentNoticeResponse().getFault()
-                                    != null
-                            ? item.getBody()
-                                    .getDemandPaymentNoticeResponse()
-                                    .getFault()
-                                    .getFaultCode()
-                                + " - "
-                                + item.getBody()
-                                    .getDemandPaymentNoticeResponse()
-                                    .getFault()
-                                    .getDescription()
-                            : ""));
+                throw new DemandPaymentNoticeKOException(
+                    "Encountered KO while calling demandPayment", item.getBody());
               }
               return item.getBody().getDemandPaymentNoticeResponse();
             })
