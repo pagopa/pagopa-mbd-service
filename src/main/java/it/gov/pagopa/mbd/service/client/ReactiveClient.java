@@ -47,7 +47,7 @@ public class ReactiveClient {
             <idPSP xmlns="">%s</idPSP>
             <idBrokerPSP xmlns="">%s</idBrokerPSP>
             <idChannel xmlns="">%s</idChannel>
-            <password>%s</password>
+            <password xmlns="">%s</password>
             <idSoggettoServizio xmlns="">%s</idSoggettoServizio>
             <datiSpecificiServizio xmlns="">%s</datiSpecificiServizio>
           </demandPaymentNoticeRequest>
