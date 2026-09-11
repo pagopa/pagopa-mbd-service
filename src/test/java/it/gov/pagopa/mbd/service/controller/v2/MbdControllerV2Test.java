@@ -1,22 +1,18 @@
-package it.gov.pagopa.mbd.service.controller;
+package it.gov.pagopa.mbd.service.controller.v2;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import it.gov.pagopa.mbd.service.controller.v1.MbdControllerV1;
 import it.gov.pagopa.mbd.service.exception.AppError;
 import it.gov.pagopa.mbd.service.exception.AppException;
 import it.gov.pagopa.mbd.service.model.ProblemJson;
 import it.gov.pagopa.mbd.service.model.carts.GetCartErrorResponse;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
-import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
 import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
-import it.gov.pagopa.mbd.service.model.mdb.PaymentNotice;
 import it.gov.pagopa.mbd.service.model.mdb.PaymentNoticeV2;
-import it.gov.pagopa.mbd.service.model.mdb.ReturnUrls;
 import it.gov.pagopa.mbd.service.model.mdb.ReturnUrlsV2;
 import it.gov.pagopa.mbd.service.service.MbdService;
 import jakarta.inject.Inject;
@@ -36,8 +32,8 @@ import org.springframework.test.web.reactive.server.WebTestClient;
 import reactor.core.publisher.Mono;
 
 @ExtendWith(SpringExtension.class)
-@WebFluxTest(controllers = MbdControllerV1.class)
-class MbdControllerV1Test {
+@WebFluxTest(controllers = MbdControllerV2.class)
+class MbdControllerV2Test {
 
   public static final byte[] MBD_BYTES = "ABC".getBytes();
   public static final String TEST_URL = "testUrl";
@@ -54,13 +50,13 @@ class MbdControllerV1Test {
   @Inject ObjectMapper objectMapper;
 
   @Test
-  void getMdb_OK_ShouldReturnCheckoutUrl() throws Exception {
-    when(mbdService.getMbd(any(), any()))
+  void getMdbV2_OK_ShouldReturnCheckoutUrl() throws Exception {
+    when(mbdService.getMbdV2(any(), any()))
         .thenAnswer(
             item -> Mono.just(GetCartResponse.builder().checkoutRedirectUrl(TEST_URL).build()));
     webClient
         .post()
-        .uri("/v1/organizations/test/mbd")
+        .uri("/v2/organizations/test/mbd")
         .bodyValue(
             objectMapper.writeValueAsBytes(
                 GetMbdRequestV2.builder()
@@ -83,17 +79,18 @@ class MbdControllerV1Test {
   }
 
   @Test
-  void getMdb_KO_ShouldReturnErrorUrl_GenericException() throws Exception {
-    when(mbdService.getMbd(any(), any())).thenAnswer(item -> Mono.error(new RuntimeException("")));
+  void getMdbV2_KO_ShouldReturnErrorUrl_GenericException() throws Exception {
+    when(mbdService.getMbdV2(any(), any()))
+        .thenAnswer(item -> Mono.error(new RuntimeException("")));
     webClient
         .post()
-        .uri("/v1/organizations/test/mbd")
+        .uri("/v2/organizations/test/mbd")
         .bodyValue(
             objectMapper.writeValueAsBytes(
-                GetMbdRequest.builder()
+                GetMbdRequestV2.builder()
                     .idCIService("test")
-                    .paymentNotices(Collections.singletonList(PaymentNotice.builder().build()))
-                    .returnUrls(ReturnUrls.builder().errorUrl(TEST_URL).build())
+                    .paymentNotices(Collections.singletonList(PaymentNoticeV2.builder().build()))
+                    .returnUrls(ReturnUrlsV2.builder().errorUrl(TEST_URL).build())
                     .build()))
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .exchange()
@@ -110,18 +107,18 @@ class MbdControllerV1Test {
   }
 
   @Test
-  void getMdb_KO_ShouldReturnErrorUrl_ConstraintViolationException() throws Exception {
-    when(mbdService.getMbd(any(), any()))
+  void getMdbV2_KO_ShouldReturnErrorUrl_ConstraintViolationException() throws Exception {
+    when(mbdService.getMbdV2(any(), any()))
         .thenAnswer(item -> Mono.error(new ConstraintViolationException(Collections.emptySet())));
     webClient
         .post()
-        .uri("/v1/organizations/test/mbd")
+        .uri("/v2/organizations/test/mbd")
         .bodyValue(
             objectMapper.writeValueAsBytes(
-                GetMbdRequest.builder()
+                GetMbdRequestV2.builder()
                     .idCIService("test")
-                    .paymentNotices(Collections.singletonList(PaymentNotice.builder().build()))
-                    .returnUrls(ReturnUrls.builder().errorUrl(TEST_URL).build())
+                    .paymentNotices(Collections.singletonList(PaymentNoticeV2.builder().build()))
+                    .returnUrls(ReturnUrlsV2.builder().errorUrl(TEST_URL).build())
                     .build()))
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .exchange()
@@ -137,18 +134,18 @@ class MbdControllerV1Test {
   }
 
   @Test
-  void getMdb_KO_ShouldReturnErrorUrl_AppException() throws Exception {
-    when(mbdService.getMbd(any(), any()))
+  void getMdbV2_KO_ShouldReturnErrorUrl_AppException() throws Exception {
+    when(mbdService.getMbdV2(any(), any()))
         .thenAnswer(item -> Mono.error(new AppException(AppError.CART_REQUEST_CALL_ERROR)));
     webClient
         .post()
-        .uri("/v1/organizations/test/mbd")
+        .uri("/v2/organizations/test/mbd")
         .bodyValue(
             objectMapper.writeValueAsBytes(
-                GetMbdRequest.builder()
+                GetMbdRequestV2.builder()
                     .idCIService("test")
-                    .paymentNotices(Collections.singletonList(PaymentNotice.builder().build()))
-                    .returnUrls(ReturnUrls.builder().errorUrl(TEST_URL).build())
+                    .paymentNotices(Collections.singletonList(PaymentNoticeV2.builder().build()))
+                    .returnUrls(ReturnUrlsV2.builder().errorUrl(TEST_URL).build())
                     .build()))
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .exchange()
@@ -165,12 +162,12 @@ class MbdControllerV1Test {
   }
 
   @Test
-  void getPaymentReceipts_OK_ShouldReturnContent() {
+  void getPaymentReceiptsV2_OK_ShouldReturnContent() {
     when(mbdService.getPaymentReceipts(any(), any()))
         .thenAnswer(item -> Mono.just(GetMdbReceipt.builder().content(MBD_BYTES).build()));
     webClient
         .get()
-        .uri("/v1/organizations/test/receipt/30000000001")
+        .uri("/v2/organizations/test/noticeNumbers/30000000001/mbd")
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .exchange()
         .expectStatus()

@@ -14,12 +14,12 @@ class HomeControllerTest {
   @Autowired private WebTestClient webClient;
 
   @Test
-  void healthCheckTestSuccess() throws Exception {
+  void healthCheckTestSuccess() {
     webClient.get().uri("/info").exchange().expectStatus().is2xxSuccessful();
   }
 
   @Test
-  void homeTestSuccess() throws Exception {
+  void homeTestSuccess() {
     webClient.get().exchange().expectStatus().is2xxSuccessful();
   }
 }
