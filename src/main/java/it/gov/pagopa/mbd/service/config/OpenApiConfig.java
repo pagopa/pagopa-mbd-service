@@ -19,7 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springdoc.core.customizers.OpenApiCustomizer;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,32 +29,18 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
-  public static final String BASE_PATH = "/pagopa-mbd-service/v1";
+  public static final String BASE_PATH = "/pagopa-mbd-service";
 
   @Bean
   public OpenAPI customOpenAPI(
       @Value("${info.application.name}") String appName,
       @Value("${info.application.description}") String appDescription,
-      @Value("${info.application.version}") String appVersion) {
+      @Value("${info.application.version}") String appVersion,
+      @Value("${server.port}") String serverPort) {
     return new OpenAPI()
         .servers(
-            List.of(
-                new Server().url("http://localhost:8080"),
-                new Server()
-                    .url("https://{host}{basePath}")
-                    .variables(
-                        new ServerVariables()
-                            .addServerVariable(
-                                "host",
-                                new ServerVariable()
-                                    ._enum(
-                                        List.of(
-                                            "api.dev.platform.pagopa.it",
-                                            "api.uat.platform.pagopa.it",
-                                            "api.platform.pagopa.it"))
-                                    ._default("api.dev.platform.pagopa.it"))
-                            .addServerVariable(
-                                "basePath", new ServerVariable()._default(BASE_PATH)))))
+            createServers(
+                serverPort, new ServerVariable()._enum(List.of("/v1", "/v2"))._default("/v1")))
         .components(
             new Components()
                 .addSecuritySchemes(
@@ -143,5 +131,76 @@ public class OpenApiConfig {
                                                   .description(
                                                       "This header identifies the call"))));
                 });
+  }
+
+  @Bean
+  public Map<String, GroupedOpenApi> configureGroupOpenApi(
+      Map<String, GroupedOpenApi> groupOpenApi, @Value("${server.port}") String serverPort) {
+    groupOpenApi.forEach(
+        (id, groupedOpenApi) ->
+            groupedOpenApi
+                .getOpenApiCustomizers()
+                .add(
+                    openApi -> {
+                      if (id.equals("v1")) {
+                        openApi.getInfo().setDescription("Marca da Bollo Digitale v1");
+                        openApi.setServers(
+                            createServers(
+                                serverPort,
+                                new ServerVariable()._enum(List.of("/v1"))._default("/v1")));
+                        removeVersionFromPaths(openApi, "/v1");
+                      } else if (id.equals("v2")) {
+                        openApi.getInfo().setDescription("Marca da Bollo Digitale v2");
+                        openApi.setServers(
+                            createServers(
+                                serverPort,
+                                new ServerVariable()._enum(List.of("/v2"))._default("/v2")));
+                        removeVersionFromPaths(openApi, "/v2");
+                      }
+                    }));
+    return groupOpenApi;
+  }
+
+  /**
+   * Removes the version prefix (e.g. "/v1") from the documented paths and instead appends it to the
+   * server URLs, so that the path shown in the swagger does not contain the version, while the
+   * server url does.
+   */
+  private void removeVersionFromPaths(OpenAPI openApi, String versionPrefix) {
+    Paths oldPaths = openApi.getPaths();
+    if (oldPaths != null) {
+      Paths newPaths = new Paths();
+      oldPaths.forEach(
+          (path, pathItem) -> {
+            String newPath =
+                path.startsWith(versionPrefix) ? path.substring(versionPrefix.length()) : path;
+            if (newPath.isEmpty()) {
+              newPath = "/";
+            }
+            newPaths.addPathItem(newPath, pathItem);
+          });
+      openApi.setPaths(newPaths);
+    }
+  }
+
+  private static @NonNull List<Server> createServers(String serverPort, ServerVariable version) {
+    String localPath = String.format("%s://%s:%s", "http", "localhost", serverPort);
+    return List.of(
+        new Server().url(localPath),
+        new Server()
+            .url("https://{host}{basePath}{version}")
+            .variables(
+                new ServerVariables()
+                    .addServerVariable(
+                        "host",
+                        new ServerVariable()
+                            ._enum(
+                                List.of(
+                                    "api.dev.platform.pagopa.it",
+                                    "api.uat.platform.pagopa.it",
+                                    "api.platform.pagopa.it"))
+                            ._default("api.dev.platform.pagopa.it"))
+                    .addServerVariable("basePath", new ServerVariable()._default(BASE_PATH))
+                    .addServerVariable("version", version)));
   }
 }

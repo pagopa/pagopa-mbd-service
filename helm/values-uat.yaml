@@ -4,7 +4,7 @@ microservice-chart:
   fullnameOverride: "pagopa-mbd-service"
   image:
     repository: ghcr.io/pagopa/pagopa-mbd-service
-    tag: "1.2.11"
+    tag: "1.2.11-6-PAGOPA-3747-ebollo-2"
     pullPolicy: Always
   livenessProbe:
     handlerType: httpGet
@@ -71,16 +71,17 @@ microservice-chart:
     APP_NAME: "mbd-service"
     APP_ENVIRONMENT: "uat"
     WEBSITE_SITE_NAME: 'mbd-service' # required to show cloud role name in application insights
-    APP_LOG_LEVEL: 'DEBUG'
+    APP_LOG_LEVEL: 'INFO'
     DEFAULT_LOGGING_LEVEL: 'INFO'
     DEMAND_PAYMENT_ENDPOINT: 'https://api.uat.platform.pagopa.it/nodo-auth/node-for-psp/v1'
     CART_ENDPOINT: 'https://api.uat.platform.pagopa.it/checkout/carts-auth/v1/carts'
+    CART_V2_ENDPOINT: 'https://api.uat.platform.pagopa.it/checkout/carts-auth/v2/carts'
     PAYMENT_RECEIPT_ENDPOINT: 'https://api.uat.platform.pagopa.it/gpd/payments-receipts-service/v1'
-    MBD_BASE_URL: 'https://api.uat.platform.pagopa.it/pagopa-mbd-service/v1'
-    MBD_ID_PSP: 'ABI50004'
-    MBD_ID_BROKER_PSP: '99999000011'
-    MBD_CHANNEL_ID: '99999000011_02'
-    ENV: 'azure-uat'
+    MBD_BASE_URL: 'https://api.uat.platform.pagopa.it/pagopa-mbd-service'
+    MBD_ID_PSP: 'AGID_01'
+    MBD_ID_BROKER_PSP: '97735020584'
+    MBD_CHANNEL_ID: '97735020584_10'
+    MBD_SERVICE_ID: '00005'
     CORS_CONFIGURATION: '{"origins": ["*"], "methods": ["*"]}'
     OTEL_SERVICE_NAME: "pagopa-mbd-service"
     OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=uat"

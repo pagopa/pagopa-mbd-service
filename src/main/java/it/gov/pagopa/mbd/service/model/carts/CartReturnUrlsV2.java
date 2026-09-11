@@ -1,6 +1,5 @@
 package it.gov.pagopa.mbd.service.model.carts;
 
-import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,9 +9,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class GetCartRequest {
+public class CartReturnUrlsV2 {
 
-  private String emailNotice;
-  private List<CartPaymentNotice> paymentNotices;
-  private CartReturnUrls returnUrls;
+  private String returnOkUrl;
+  private String returnCancelUrl;
+  private String returnErrorUrl;
+  private String returnWaitingUrl;
 }

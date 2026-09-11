@@ -8,7 +8,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -17,17 +16,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class ResponseValidator {
 
-  @Autowired private Validator validator;
+  private final Validator validator;
+
+  public ResponseValidator(Validator validator) {
+    this.validator = validator;
+  }
 
   /**
-   * This method validates the response annotated with the {@link javax.validation.constraints}
+   * This method validates the response annotated with the {@link jakarta.validation.constraints}
    *
    * @param joinPoint not used
    * @param result the response to validate
    */
-  // TODO: set your package
   @AfterReturning(
-      pointcut = "execution(* it.gov.pagopa.microservice.controller.*.*(..))",
+      pointcut = "execution(* it.gov.pagopa.mbd.service.controller.*.*(..))",
       returning = "result")
   public void validateResponse(JoinPoint joinPoint, Object result) {
     if (result instanceof ResponseEntity) {

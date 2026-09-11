@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class GetCartRequest {
+public class GetCartRequestV2 {
 
   private String emailNotice;
   private List<CartPaymentNotice> paymentNotices;
-  private CartReturnUrls returnUrls;
+  private CartReturnUrlsV2 returnUrls;
 }

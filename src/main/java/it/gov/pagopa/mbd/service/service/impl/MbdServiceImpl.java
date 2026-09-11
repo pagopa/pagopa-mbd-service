@@ -1,30 +1,26 @@
 package it.gov.pagopa.mbd.service.service.impl;
 
-import static org.apache.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-
 import it.gov.pagopa.mbd.service.client.ReactiveClient;
 import it.gov.pagopa.mbd.service.exception.AppError;
 import it.gov.pagopa.mbd.service.exception.AppException;
 import it.gov.pagopa.mbd.service.exception.CartMappingException;
 import it.gov.pagopa.mbd.service.exception.WebClientException;
 import it.gov.pagopa.mbd.service.mapper.RequestMapper;
+import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
+import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
 import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
-import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeResponse;
 import it.gov.pagopa.mbd.service.service.MbdService;
+import it.gov.pagopa.pagopa_api.node.nodeforpsp.DemandPaymentNoticeResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import java.util.HashMap;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.oxm.XmlMappingException;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -32,38 +28,40 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class MbdServiceImpl implements MbdService {
 
+  private static final String DEMAND_PAYMENT_NOTICE_RESPONSE_KEY = "demandPaymentNoticeResponse";
+  private static final String GET_MBD_V1_PATH = "%s/v1/organizations/%s/receipts/%s";
+  private static final String GET_MBD_V2_PATH = "%s/v2/organizations/%s/noticeNumber/%s/mbd";
+
   private final Validator validator;
   private final ReactiveClient reactiveSoapClient;
-  private final Jaxb2Marshaller jaxb2Marshaller;
   private final String mdbLinkBaseUrl;
-
   private final String idPsp;
-
   private final String idBrokerPsp;
-
   private final String channelId;
+  private final String mbdServiceId;
 
   @Autowired
   public MbdServiceImpl(
       Validator validator,
       ReactiveClient reactiveSoapClient,
-      Jaxb2Marshaller jaxb2Marshaller,
       @Value("${mbd.link.baseUrl}") String mdbLinkBaseUrl,
       @Value("${mbd.mapper.idPsp}") String idPsp,
       @Value("${mbd.mapper.idBrokerPsp}") String idBrokerPsp,
-      @Value("${mbd.mapper.channelId}") String channelId) {
+      @Value("${mbd.mapper.channelId}") String channelId,
+      @Value("${mbd.service.id}") String mbdServiceId) {
     this.validator = validator;
     this.reactiveSoapClient = reactiveSoapClient;
-    this.jaxb2Marshaller = jaxb2Marshaller;
     this.mdbLinkBaseUrl = mdbLinkBaseUrl;
     this.idPsp = idPsp;
     this.idBrokerPsp = idBrokerPsp;
     this.channelId = channelId;
+    this.mbdServiceId = mbdServiceId;
   }
 
+  /** {@inheritDoc} */
   @Override
-  public Mono<ResponseEntity> getMbd(String fiscalCodeEC, GetMbdRequest request) {
-    HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap();
+  public Mono<GetCartResponse> getMbd(String organizationFiscalCode, GetMbdRequest request) {
+    HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap<>();
     return Mono.just(request)
         .doFirst(
             () -> {
@@ -80,9 +78,17 @@ public class MbdServiceImpl implements MbdService {
               return e;
             })
         .map(
-            item ->
-                RequestMapper.mapDemandPaymentNoticeRequest(
-                    idPsp, idBrokerPsp, channelId, fiscalCodeEC, jaxb2Marshaller, item))
+            item -> {
+              GetMbdRequestV2 getMbdRequestV2 =
+                  RequestMapper.mapGetMbdRequestToGetMbdRequestV2(item);
+              return RequestMapper.mapDemandPaymentNoticeRequest(
+                  idPsp,
+                  idBrokerPsp,
+                  channelId,
+                  mbdServiceId,
+                  organizationFiscalCode,
+                  getMbdRequestV2);
+            })
         .onErrorMap(
             XmlMappingException.class,
             e -> {
@@ -100,7 +106,7 @@ public class MbdServiceImpl implements MbdService {
             })
         .map(
             demandPaymentNoticeResponse -> {
-              hashMap.put("demandPaymentNoticeResponse", demandPaymentNoticeResponse);
+              hashMap.put(DEMAND_PAYMENT_NOTICE_RESPONSE_KEY, demandPaymentNoticeResponse);
               return RequestMapper.mapCartRequest(request, demandPaymentNoticeResponse);
             })
         .onErrorMap(
@@ -119,18 +125,89 @@ public class MbdServiceImpl implements MbdService {
         .map(
             item -> {
               String noticeNumber =
-                  hashMap.get("demandPaymentNoticeResponse").getQrCode().getNoticeNumber();
+                  hashMap.get(DEMAND_PAYMENT_NOTICE_RESPONSE_KEY).getQrCode().getNoticeNumber();
               item.setNav(noticeNumber);
-              item.setMbdDownloadLink(
-                  StringUtils.joinWith(
-                      "/", mdbLinkBaseUrl, "organizations", fiscalCodeEC, "receipt", noticeNumber));
-              return ResponseEntity.ok().header(CONTENT_TYPE, APPLICATION_JSON_VALUE).body(item);
+              String mbdDownloadLink =
+                  String.format(
+                      GET_MBD_V1_PATH, mdbLinkBaseUrl, organizationFiscalCode, noticeNumber);
+              item.setMbdDownloadLink(mbdDownloadLink);
+              return item;
             });
   }
 
+  /** {@inheritDoc} */
   @Override
-  public Mono<ResponseEntity> getPaymentReceipts(String fiscalCode, String nav) {
-    return Mono.zip(Mono.just(fiscalCode), Mono.just(nav).map(item -> nav.substring(1)))
+  public Mono<GetCartResponse> getMbdV2(String organizationFiscalCode, GetMbdRequestV2 request) {
+    HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap<>();
+    return Mono.just(request)
+        .doFirst(
+            () -> {
+              Set<ConstraintViolation<GetMbdRequestV2>> errors = validator.validate(request);
+              if (!errors.isEmpty()) {
+                throw new ConstraintViolationException(errors);
+              }
+            })
+        .onErrorMap(
+            ConstraintViolationException.class,
+            e -> {
+              log.error(
+                  "Encountered an error during demandPaymentNotice Validation: {}", e.getMessage());
+              return e;
+            })
+        .map(
+            item ->
+                RequestMapper.mapDemandPaymentNoticeRequest(
+                    idPsp, idBrokerPsp, channelId, mbdServiceId, organizationFiscalCode, item))
+        .onErrorMap(
+            XmlMappingException.class,
+            e -> {
+              log.error(
+                  "Encountered an error during demandPaymentNotice Request Mapping: {}",
+                  e.getMessage());
+              return new AppException(AppError.PAYMENT_NOTICE_REQUEST_MAP_ERROR, e);
+            })
+        .flatMap(reactiveSoapClient::demandPaymentNotice)
+        .onErrorMap(
+            WebClientException.class,
+            e -> {
+              log.error("Encountered an error during demandPaymentNotice Call: {}", e.getMessage());
+              return new AppException(AppError.PAYMENT_NOTICE_REQUEST_CALL_ERROR, e);
+            })
+        .map(
+            demandPaymentNoticeResponse -> {
+              hashMap.put(DEMAND_PAYMENT_NOTICE_RESPONSE_KEY, demandPaymentNoticeResponse);
+              return RequestMapper.mapCartV2Request(request, demandPaymentNoticeResponse);
+            })
+        .onErrorMap(
+            CartMappingException.class,
+            e -> {
+              log.error("Encountered an error during cart mapping: {}", e.getMessage());
+              return new AppException(AppError.CART_REQUEST_MAP_ERROR, e);
+            })
+        .flatMap(reactiveSoapClient::getCartV2)
+        .onErrorMap(
+            WebClientException.class,
+            e -> {
+              log.error("Encountered an error during getCart Call: {}", e.getMessage());
+              return new AppException(AppError.CART_REQUEST_CALL_ERROR, e);
+            })
+        .map(
+            item -> {
+              String noticeNumber =
+                  hashMap.get(DEMAND_PAYMENT_NOTICE_RESPONSE_KEY).getQrCode().getNoticeNumber();
+              item.setNav(noticeNumber);
+              String mbdDownloadLink =
+                  String.format(
+                      GET_MBD_V2_PATH, mdbLinkBaseUrl, organizationFiscalCode, noticeNumber);
+              item.setMbdDownloadLink(mbdDownloadLink);
+              return item;
+            });
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  public Mono<GetMdbReceipt> getPaymentReceipts(String organizationFiscalCode, String nav) {
+    return Mono.zip(Mono.just(organizationFiscalCode), Mono.just(nav).map(item -> nav.substring(1)))
         .flatMap(tuple -> reactiveSoapClient.getPaymentReceipt(tuple.getT1(), tuple.getT2()))
         .onErrorMap(
             WebClientException.class,
@@ -145,18 +222,6 @@ public class MbdServiceImpl implements MbdService {
               log.error("Encountered an error extracting receipt content: {}", e.getMessage());
               return new AppException(AppError.PAYMENT_RECEIPTS_CALL_ERROR, e);
             })
-        .map(
-            item ->
-                ResponseEntity.ok()
-                    .header("Content-Type", APPLICATION_JSON_VALUE)
-                    .body(
-                        GetMdbReceipt.builder()
-                            .content(
-                                item.getReceipt()
-                                    .getTransferList()
-                                    .getTransfer()
-                                    .get(0)
-                                    .getMBDAttachment())
-                            .build()));
+        .map(item -> GetMdbReceipt.builder().content(item).build());
   }
 }
