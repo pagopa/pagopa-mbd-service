@@ -15,12 +15,16 @@ import it.gov.pagopa.pagopa_api.pa.pafornode.CtTransferListPAReceiptV2;
 import it.gov.pagopa.pagopa_api.pa.pafornode.CtTransferPAReceiptV2;
 import it.gov.pagopa.pagopa_api.pa.pafornode.PaSendRTV2Request;
 import it.gov.pagopa.pagopa_api.xsd.common_types.v1_0.StOutcome;
+import jakarta.xml.bind.JAXBElement;
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import javax.xml.transform.stream.StreamSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -51,11 +55,14 @@ public class ReactiveClient {
 
   private final WebClient webClient;
   private final ClientDataConfig clientDataConfig;
+  private final Jaxb2Marshaller jaxb2Marshaller;
 
   @Autowired
-  public ReactiveClient(WebClient webClient, ClientDataConfig clientDataConfig) {
+  public ReactiveClient(
+      WebClient webClient, ClientDataConfig clientDataConfig, Jaxb2Marshaller jaxb2Marshaller) {
     this.webClient = webClient;
     this.clientDataConfig = clientDataConfig;
+    this.jaxb2Marshaller = jaxb2Marshaller;
   }
 
   /**
@@ -85,7 +92,8 @@ public class ReactiveClient {
         .header(OCP_SUBSCRIPTION_KEY, clientDataConfig.getDemandPaymentSubscriptionKey())
         .bodyValue(requestBody)
         .retrieve()
-        .bodyToMono(Envelope.class)
+        .bodyToMono(String.class)
+        .map(this::unmarshalEnvelope)
         .map(this::extractDemandPaymentNoticeResponse)
         .onErrorMap(DemandPaymentNoticeKOException.class, e -> e)
         .onErrorMap(e -> new WebClientException(e.getMessage(), e));
@@ -165,21 +173,37 @@ public class ReactiveClient {
             WebClientResponseException.class, e -> new WebClientException(e.getMessage(), e));
   }
 
+  private Envelope unmarshalEnvelope(String xml) {
+    log.debug("Received demandPaymentNotice response: {}", xml);
+    Object unmarshalled =
+        jaxb2Marshaller.unmarshal(
+            new StreamSource(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8))));
+    if (unmarshalled instanceof JAXBElement<?> jaxbElement) {
+      unmarshalled = jaxbElement.getValue();
+    }
+    return (Envelope) unmarshalled;
+  }
+
   private DemandPaymentNoticeResponse extractDemandPaymentNoticeResponse(Envelope envelope) {
     DemandPaymentNoticeResponse response = null;
     if (envelope.getBody() != null
         && envelope.getBody().getAny() != null
         && !envelope.getBody().getAny().isEmpty()) {
-      response = ((DemandPaymentNoticeResponse) envelope.getBody().getAny().get(0));
+
+      Object first = envelope.getBody().getAny().get(0);
+      if (first instanceof JAXBElement<?> jaxbElement
+          && jaxbElement.getValue() instanceof DemandPaymentNoticeResponse demand) {
+        response = demand;
+      } else if (first instanceof DemandPaymentNoticeResponse demand) {
+        response = demand;
+      }
     }
 
     if (response == null || StOutcome.KO.equals(response.getOutcome())) {
-      log.debug("Received demandPaymentNotice KO response: {}", response);
       throw new DemandPaymentNoticeKOException(
-          "Encountered KO while calling demandPayment", envelope.getBody());
+          "Encountered KO while calling demandPayment", response);
     }
 
-    log.debug("Received demandPaymentNotice response: {}", response);
     return response;
   }
 }

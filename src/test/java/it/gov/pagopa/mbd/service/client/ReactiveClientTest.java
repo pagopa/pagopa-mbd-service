@@ -50,17 +50,31 @@ class ReactiveClientTest {
                     .withBody(
 """
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-  <soapenv:Envelope
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
-  xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  xmlns:common="http://pagopa-api.pagopa.gov.it/xsd/common-types/v1.0.0/"
-  xmlns:nfp="http://pagopa-api.pagopa.gov.it/node/nodeForPsp.xsd">
-    <soapenv:Body>
-        <nfp:demandPaymentNoticeResponse>
-            <outcome>OK</outcome>
-        </nfp:demandPaymentNoticeResponse>
-    </soapenv:Body>
+<soapenv:Envelope
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+xmlns:xs="http://www.w3.org/2001/XMLSchema"
+xmlns:common="http://pagopa-api.pagopa.gov.it/xsd/common-types/v1.0.0/"
+xmlns:nfp="http://pagopa-api.pagopa.gov.it/node/nodeForPsp.xsd">
+  <soapenv:Body>
+    <nfp:demandPaymentNoticeResponse>
+      <outcome>OK</outcome>
+      <qrCode>
+        <fiscalCode>00493410583</fiscalCode>
+        <noticeNumber>396000020305376917</noticeNumber>
+      </qrCode>
+      <paymentList>
+        <paymentOptionDescription>
+          <amount>184.08</amount>
+          <options>EQ</options>
+          <paymentNote>/RFB/96000020305376917/TXT/ER600WK-Mag2026/Apr2027-RFFPTR59R24F839F-EC Campania-E. 184,08</paymentNote>
+        </paymentOptionDescription>
+      </paymentList>
+      <paymentDescription>/RFB/96000020305376917/TXT/ER600WK-Mag2026/Apr2027-RFFPTR59R24F839F-EC Campania-E. 184,08</paymentDescription>
+      <fiscalCodePA>00493410583</fiscalCodePA>
+      <companyName>Automobile Club d'Italia</companyName>
+    </nfp:demandPaymentNoticeResponse>
+  </soapenv:Body>
 </soapenv:Envelope>
 """)));
     Mono<DemandPaymentNoticeResponse> demandPaymentNoticeResponseMono =

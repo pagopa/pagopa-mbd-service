@@ -10,7 +10,7 @@ public class MarshalerConfig {
   @Bean
   public Jaxb2Marshaller marshaler() {
     Jaxb2Marshaller jaxb2Marshaller = new Jaxb2Marshaller();
-    jaxb2Marshaller.setPackagesToScan("it.gov.pagopa.mbd.service.model.xml.node.marcaDaBollo");
+    jaxb2Marshaller.setPackagesToScan("it.gov.pagopa.pagopa_api", "it.gov.pagopa.pagopa_api.pa", "org.xmlsoap.schemas.soap.envelope");
     return jaxb2Marshaller;
   }
 }
