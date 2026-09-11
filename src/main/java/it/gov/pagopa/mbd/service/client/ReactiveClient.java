@@ -16,7 +16,9 @@ import it.gov.pagopa.mbd.service.model.xml.node.pafornode.CtTransferPAReceiptV2;
 import it.gov.pagopa.mbd.service.model.xml.node.pafornode.PaSendRTV2Request;
 import it.gov.pagopa.mbd.service.model.xml.node.soap.envelope.Envelope;
 import it.gov.pagopa.mbd.service.model.xml.xsd.common_types.v1_0.StOutcome;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -25,6 +27,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 @Component
 public class ReactiveClient {
 
@@ -71,8 +74,9 @@ public class ReactiveClient {
             request.getIdBrokerPSP(),
             request.getIdChannel(),
             request.getIdSoggettoServizio(),
-            new String(request.getDatiSpecificiServizio()));
+            new String(request.getDatiSpecificiServizio(), StandardCharsets.UTF_8));
 
+    log.debug("Requesting demandPaymentNotice with body: {}", requestBody);
     return webClient
         .post()
         .uri(clientDataConfig.getDemandPaymentEndpoint())
@@ -82,17 +86,8 @@ public class ReactiveClient {
         .bodyValue(requestBody)
         .retrieve()
         .bodyToMono(Envelope.class)
-        .map(
-            item -> {
-              if (item.getBody() == null
-                  || item.getBody().getDemandPaymentNoticeResponse() == null
-                  || StOutcome.KO.equals(
-                      item.getBody().getDemandPaymentNoticeResponse().getOutcome())) {
-                throw new DemandPaymentNoticeKOException(
-                    "Encountered KO while calling demandPayment", item.getBody());
-              }
-              return item.getBody().getDemandPaymentNoticeResponse();
-            })
+        .map(this::extractDemandPaymentNoticeResponse)
+        .onErrorMap(DemandPaymentNoticeKOException.class, e -> e)
         .onErrorMap(e -> new WebClientException(e.getMessage(), e));
   }
 
@@ -168,5 +163,19 @@ public class ReactiveClient {
         .onErrorMap(IllegalArgumentException.class, e -> e)
         .onErrorMap(
             WebClientResponseException.class, e -> new WebClientException(e.getMessage(), e));
+  }
+
+  private DemandPaymentNoticeResponse extractDemandPaymentNoticeResponse(Envelope envelope) {
+    DemandPaymentNoticeResponse response =
+        envelope.getBody() != null ? envelope.getBody().getDemandPaymentNoticeResponse() : null;
+
+    if (response == null || StOutcome.KO.equals(response.getOutcome())) {
+      log.debug("Received demandPaymentNotice KO response: {}", response);
+      throw new DemandPaymentNoticeKOException(
+          "Encountered KO while calling demandPayment", envelope.getBody());
+    }
+
+    log.debug("Received demandPaymentNotice response: {}", response);
+    return response;
   }
 }
