@@ -73,7 +73,7 @@ microservice-chart:
     WEBSITE_SITE_NAME: 'mbd-service' # required to show cloud role name in application insights
     APP_LOG_LEVEL: 'INFO'
     DEFAULT_LOGGING_LEVEL: 'INFO'
-    DEMAND_PAYMENT_ENDPOINT: 'https://api.dev.platform.pagopa.it/nodo-auth/node-for-psp/v1'
+    DEMAND_PAYMENT_ENDPOINT: 'https://api.dev.platform.pagopa.it/nodo-ndp/node-for-psp/v1'
     CART_ENDPOINT: 'https://api.dev.platform.pagopa.it/checkout/carts-auth/v1/carts'
     CART_V2_ENDPOINT: 'https://api.dev.platform.pagopa.it/checkout/carts-auth/v2/carts'
     PAYMENT_RECEIPT_ENDPOINT: 'https://api.dev.platform.pagopa.it/gpd/payments-receipts-service/v1'
@@ -94,7 +94,7 @@ microservice-chart:
     # required
     APPLICATIONINSIGHTS_CONNECTION_STRING: 'app-insight-connection-string'
     OTEL_EXPORTER_OTLP_HEADERS: elastic-apm-secret-token
-    DEMAND_PAYMENT_SUBKEY: 'apikey-node-for-psp'
+    DEMAND_PAYMENT_SUBKEY: 'apikey-node-for-psp-pagopa'
     CART_SUBKEY: 'apikey-checkout-carts'
     PAYMENT_RECEIPT_SUBKEY: 'apikey-gpd-payments'
   keyvault:
