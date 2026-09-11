@@ -76,7 +76,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         .idBrokerPSP(idBrokerPsp)
         .idChannel(idChannel)
         .idSoggettoServizio(getMdbRequest.getIdCIService())
-        .password("")
+        .password("PLACEHOLDER")
         .datiSpecificiServizio(Base64.getMimeEncoder().encode(formattedServiceData.getBytes()))
         .build();
   }
