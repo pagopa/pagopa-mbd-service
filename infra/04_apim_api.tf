@@ -4,7 +4,7 @@ locals {
     description           = "API for eBollo 2.0"
     path                  = "pagopa-mbd-service"
     subscription_required = true
-    service_url           = null
+    service_url           = var.env == "prod" ? "https://ebollo.itn.internal.platform.pagopa.it/pagopa-mbd-service" : "https://ebollo.itn.internal.${var.env}.platform.pagopa.it/pagopa-mbd-service"
   }
   host     = "api.${var.apim_dns_zone_prefix}.${var.external_domain}"
   hostname = var.hostname
@@ -42,7 +42,7 @@ module "apim_mbd_api_v1" {
   display_name = local.apim_mbd.display_name
   path         = local.apim_mbd.path
   protocols    = ["https"]
-  service_url  = local.apim_mbd.service_url
+  service_url  = "${local.apim_mbd.service_url}/v1"
 
   content_format = "openapi"
   content_value  = file("../openapi/openapi_v1.json")
@@ -67,7 +67,7 @@ module "apim_mbd_api_v2" {
   display_name = local.apim_mbd.display_name
   path         = local.apim_mbd.path
   protocols    = ["https"]
-  service_url  = local.apim_mbd.service_url
+  service_url  = "${local.apim_mbd.service_url}/v2"
 
   content_format = "openapi"
   content_value  = file("../openapi/openapi_v2.json")
