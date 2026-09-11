@@ -47,6 +47,7 @@ public class ReactiveClient {
             <idPSP xmlns="">%s</idPSP>
             <idBrokerPSP xmlns="">%s</idBrokerPSP>
             <idChannel xmlns="">%s</idChannel>
+            <password>%s</password>
             <idSoggettoServizio xmlns="">%s</idSoggettoServizio>
             <datiSpecificiServizio xmlns="">%s</datiSpecificiServizio>
           </demandPaymentNoticeRequest>
@@ -80,6 +81,7 @@ public class ReactiveClient {
             request.getIdPSP(),
             request.getIdBrokerPSP(),
             request.getIdChannel(),
+            request.getPassword(),
             request.getIdSoggettoServizio(),
             new String(request.getDatiSpecificiServizio(), StandardCharsets.UTF_8));
 
