@@ -71,7 +71,7 @@ microservice-chart:
     APP_NAME: "mbd-service"
     APP_ENVIRONMENT: "dev"
     WEBSITE_SITE_NAME: 'mbd-service' # required to show cloud role name in application insights
-    APP_LOG_LEVEL: 'INFO'
+    APP_LOG_LEVEL: 'DEBUG'
     DEFAULT_LOGGING_LEVEL: 'INFO'
     DEMAND_PAYMENT_ENDPOINT: 'https://api.dev.platform.pagopa.it/nodo-ndp/node-for-psp/v1'
     CART_ENDPOINT: 'https://api.dev.platform.pagopa.it/checkout/carts-auth/v1/carts'
