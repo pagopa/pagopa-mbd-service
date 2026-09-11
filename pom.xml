@@ -161,10 +161,8 @@
             </executions>
             <configuration>
                 <sources>
-<!--                    <source>${project.basedir}/src/main/resources/service.xsd</source>-->
-<!--                    <source>${project.basedir}/src/main/resources/nodo-for-psp.xsd</source>-->
-                    <source>${project.basedir}/src/main/resources/nodo-for-pa.xsd</source>
-<!--                    <source>${project.basedir}/src/main/resources/MarcaDaBollo.xsd</source>-->
+                    <source>${project.basedir}/src/main/resources/wsdl/xsd/</source>
+                    <source>${project.basedir}/src/main/resources/xsd-common/</source>
                 </sources>
             </configuration>
         </plugin>

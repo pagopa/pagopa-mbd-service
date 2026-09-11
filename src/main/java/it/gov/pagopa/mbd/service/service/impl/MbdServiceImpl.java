@@ -10,8 +10,8 @@ import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
 import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
-import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeResponse;
 import it.gov.pagopa.mbd.service.service.MbdService;
+import it.gov.pagopa.pagopa_api.node.nodeforpsp.DemandPaymentNoticeResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
@@ -82,7 +82,12 @@ public class MbdServiceImpl implements MbdService {
               GetMbdRequestV2 getMbdRequestV2 =
                   RequestMapper.mapGetMbdRequestToGetMbdRequestV2(item);
               return RequestMapper.mapDemandPaymentNoticeRequest(
-                  idPsp, idBrokerPsp, channelId, mbdServiceId, organizationFiscalCode, getMbdRequestV2);
+                  idPsp,
+                  idBrokerPsp,
+                  channelId,
+                  mbdServiceId,
+                  organizationFiscalCode,
+                  getMbdRequestV2);
             })
         .onErrorMap(
             XmlMappingException.class,

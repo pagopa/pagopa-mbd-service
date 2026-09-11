@@ -8,14 +8,13 @@ import it.gov.pagopa.mbd.service.exception.WebClientException;
 import it.gov.pagopa.mbd.service.model.carts.GetCartRequest;
 import it.gov.pagopa.mbd.service.model.carts.GetCartRequestV2;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
-import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeRequest;
-import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeResponse;
-import it.gov.pagopa.mbd.service.model.xml.node.pafornode.CtReceiptV2;
-import it.gov.pagopa.mbd.service.model.xml.node.pafornode.CtTransferListPAReceiptV2;
-import it.gov.pagopa.mbd.service.model.xml.node.pafornode.CtTransferPAReceiptV2;
-import it.gov.pagopa.mbd.service.model.xml.node.pafornode.PaSendRTV2Request;
-import it.gov.pagopa.mbd.service.model.xml.node.soap.envelope.Envelope;
-import it.gov.pagopa.mbd.service.model.xml.xsd.common_types.v1_0.StOutcome;
+import it.gov.pagopa.pagopa_api.node.nodeforpsp.DemandPaymentNoticeRequest;
+import it.gov.pagopa.pagopa_api.node.nodeforpsp.DemandPaymentNoticeResponse;
+import it.gov.pagopa.pagopa_api.pa.pafornode.CtReceiptV2;
+import it.gov.pagopa.pagopa_api.pa.pafornode.CtTransferListPAReceiptV2;
+import it.gov.pagopa.pagopa_api.pa.pafornode.CtTransferPAReceiptV2;
+import it.gov.pagopa.pagopa_api.pa.pafornode.PaSendRTV2Request;
+import it.gov.pagopa.pagopa_api.xsd.common_types.v1_0.StOutcome;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +24,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.xmlsoap.schemas.soap.envelope.Envelope;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -166,8 +166,12 @@ public class ReactiveClient {
   }
 
   private DemandPaymentNoticeResponse extractDemandPaymentNoticeResponse(Envelope envelope) {
-    DemandPaymentNoticeResponse response =
-        envelope.getBody() != null ? envelope.getBody().getDemandPaymentNoticeResponse() : null;
+    DemandPaymentNoticeResponse response = null;
+    if (envelope.getBody() != null
+        && envelope.getBody().getAny() != null
+        && !envelope.getBody().getAny().isEmpty()) {
+      response = ((DemandPaymentNoticeResponse) envelope.getBody().getAny().get(0));
+    }
 
     if (response == null || StOutcome.KO.equals(response.getOutcome())) {
       log.debug("Received demandPaymentNotice KO response: {}", response);

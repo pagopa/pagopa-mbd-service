@@ -14,10 +14,10 @@ import it.gov.pagopa.mbd.service.model.carts.CartPaymentNotice;
 import it.gov.pagopa.mbd.service.model.carts.GetCartRequest;
 import it.gov.pagopa.mbd.service.model.carts.GetCartRequestV2;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
-import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeRequest;
-import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeResponse;
+import it.gov.pagopa.pagopa_api.node.nodeforpsp.DemandPaymentNoticeRequest;
+import it.gov.pagopa.pagopa_api.node.nodeforpsp.DemandPaymentNoticeResponse;
 import jakarta.inject.Inject;
-import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Collections;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
@@ -64,14 +64,7 @@ class ReactiveClientTest {
 </soapenv:Envelope>
 """)));
     Mono<DemandPaymentNoticeResponse> demandPaymentNoticeResponseMono =
-        reactiveClient.demandPaymentNotice(
-            DemandPaymentNoticeRequest.builder()
-                .idPSP("1212")
-                .idBrokerPSP("121212")
-                .idChannel("232323")
-                .password("")
-                .datiSpecificiServizio("test".getBytes(StandardCharsets.UTF_8))
-                .build());
+        reactiveClient.demandPaymentNotice(buildDemandPaymentNoticeRequest());
     DemandPaymentNoticeResponse demandPaymentNoticeResponse =
         demandPaymentNoticeResponseMono.block();
     assertNotNull(demandPaymentNoticeResponse);
@@ -103,14 +96,7 @@ class ReactiveClientTest {
                                 </soapenv:Envelope>
                                 """)));
     Mono<DemandPaymentNoticeResponse> demandPaymentNoticeResponseMono =
-        reactiveClient.demandPaymentNotice(
-            DemandPaymentNoticeRequest.builder()
-                .idPSP("1212")
-                .idBrokerPSP("121212")
-                .idChannel("232323")
-                .password("")
-                .datiSpecificiServizio("test".getBytes(StandardCharsets.UTF_8))
-                .build());
+        reactiveClient.demandPaymentNotice(buildDemandPaymentNoticeRequest());
     assertThrows(WebClientException.class, demandPaymentNoticeResponseMono::block);
   }
 
@@ -261,5 +247,16 @@ class ReactiveClientTest {
         get(urlMatching("/receipt/.*")).willReturn(aResponse().withStatus(500)));
     Mono<byte[]> getResponseMono = reactiveClient.getPaymentReceipt("test", "test");
     assertThrows(WebClientException.class, getResponseMono::block);
+  }
+
+  private DemandPaymentNoticeRequest buildDemandPaymentNoticeRequest() {
+    DemandPaymentNoticeRequest demandRequest = new DemandPaymentNoticeRequest();
+    demandRequest.setIdPSP("1212");
+    demandRequest.setIdBrokerPSP("121212");
+    demandRequest.setIdChannel("232323");
+    demandRequest.setIdSoggettoServizio("");
+    demandRequest.setPassword("PLACEHOLDER");
+    demandRequest.setDatiSpecificiServizio(Base64.getMimeEncoder().encode("test".getBytes()));
+    return demandRequest;
   }
 }

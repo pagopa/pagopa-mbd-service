@@ -20,9 +20,13 @@ import it.gov.pagopa.mbd.service.model.mdb.PaymentNoticeV2;
 import it.gov.pagopa.mbd.service.model.mdb.ReturnUrls;
 import it.gov.pagopa.mbd.service.model.mdb.ReturnUrlsV2;
 import it.gov.pagopa.mbd.service.model.mdb.UniqueIdentifier;
-import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.*;
-import it.gov.pagopa.mbd.service.model.xml.xsd.common_types.v1_0.StOutcome;
 import it.gov.pagopa.mbd.service.service.MbdService;
+import it.gov.pagopa.pagopa_api.node.nodeforpsp.CtPaymentOptionDescription;
+import it.gov.pagopa.pagopa_api.node.nodeforpsp.CtPaymentOptionsDescriptionList;
+import it.gov.pagopa.pagopa_api.node.nodeforpsp.CtQrCode;
+import it.gov.pagopa.pagopa_api.node.nodeforpsp.DemandPaymentNoticeResponse;
+import it.gov.pagopa.pagopa_api.node.nodeforpsp.StAmountOptionPSP;
+import it.gov.pagopa.pagopa_api.xsd.common_types.v1_0.StOutcome;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolationException;
 import java.math.BigDecimal;
@@ -39,6 +43,7 @@ class MdbServiceImplTest {
 
   public static final String FISCAL_CODE_EC = "organization_fiscal_code";
   public static final String NAV = "3000000001";
+  public static final String FISCAL_CODE = "JHNDOE00A01B157N";
 
   @MockBean private ReactiveClient reactiveClient;
 
@@ -47,7 +52,6 @@ class MdbServiceImplTest {
   @Test
   void getMdb_OK() throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
-    demandPaymentNoticeResponse.setOutcome(StOutcome.OK);
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
 
@@ -65,9 +69,7 @@ class MdbServiceImplTest {
   }
 
   @Test
-  void getMdb_KO_ClientErrorOnDemand() throws DatatypeConfigurationException {
-    DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
-    demandPaymentNoticeResponse.setOutcome(StOutcome.OK);
+  void getMdb_KO_ClientErrorOnDemand() {
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.error(new WebClientException("Error", null)));
 
@@ -83,10 +85,7 @@ class MdbServiceImplTest {
 
   @Test
   void getMdb_KO_ErrorMappingDemandResponseToCartRequest() {
-    DemandPaymentNoticeResponse demandPaymentNoticeResponse =
-        DemandPaymentNoticeResponse.builder()
-            .qrCode(CtQrCode.builder().noticeNumber(NAV).fiscalCode("JHNDOE00A01B157N").build())
-            .build();
+    DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildInvalidDemandResponse();
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
 
@@ -103,7 +102,6 @@ class MdbServiceImplTest {
   @Test
   void getMdb_KO_ClientErrorOnGetCart() throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
-    demandPaymentNoticeResponse.setOutcome(StOutcome.OK);
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
 
@@ -122,7 +120,6 @@ class MdbServiceImplTest {
   void getMdb_KO_RequestValidationError_WrongDocumentHashLength()
       throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
-    demandPaymentNoticeResponse.setOutcome(StOutcome.OK);
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
 
@@ -138,7 +135,6 @@ class MdbServiceImplTest {
   @Test
   void getMdb_KO_RequestValidationError_InvalidFiscalCode() throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
-    demandPaymentNoticeResponse.setOutcome(StOutcome.OK);
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
 
@@ -155,7 +151,6 @@ class MdbServiceImplTest {
   @Test
   void getMdbV2_OK() throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
-    demandPaymentNoticeResponse.setOutcome(StOutcome.OK);
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
 
@@ -173,9 +168,7 @@ class MdbServiceImplTest {
   }
 
   @Test
-  void getMdbV2_KO_ClientErrorOnDemand() throws DatatypeConfigurationException {
-    DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
-    demandPaymentNoticeResponse.setOutcome(StOutcome.OK);
+  void getMdbV2_KO_ClientErrorOnDemand() {
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.error(new WebClientException("Error", null)));
 
@@ -191,10 +184,7 @@ class MdbServiceImplTest {
 
   @Test
   void getMdbV2_KO_ErrorMappingDemandResponseToCartRequest() {
-    DemandPaymentNoticeResponse demandPaymentNoticeResponse =
-        DemandPaymentNoticeResponse.builder()
-            .qrCode(CtQrCode.builder().noticeNumber(NAV).fiscalCode("JHNDOE00A01B157N").build())
-            .build();
+    DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildInvalidDemandResponse();
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
 
@@ -211,7 +201,6 @@ class MdbServiceImplTest {
   @Test
   void getMdbV2_KO_ClientErrorOnGetCart() throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
-    demandPaymentNoticeResponse.setOutcome(StOutcome.OK);
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
 
@@ -230,7 +219,6 @@ class MdbServiceImplTest {
   void getMdbV2_KO_RequestValidationError_WrongDocumentHashLength()
       throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
-    demandPaymentNoticeResponse.setOutcome(StOutcome.OK);
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
 
@@ -247,7 +235,6 @@ class MdbServiceImplTest {
   void getMdbV2_KO_RequestValidationError_InvalidFiscalCode()
       throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
-    demandPaymentNoticeResponse.setOutcome(StOutcome.OK);
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
 
@@ -293,7 +280,7 @@ class MdbServiceImplTest {
                     .amount(1000L)
                     .documentHash("1".repeat(documentHashLength))
                     .email("test@gmail.com")
-                    .fiscalCode("JHNDOE00A01B157N")
+                    .fiscalCode(FISCAL_CODE)
                     .lastName("debtor last name")
                     .firstName("debtor first name")
                     .province("RM")
@@ -322,7 +309,7 @@ class MdbServiceImplTest {
                             .uniqueIdentifier(
                                 UniqueIdentifier.builder()
                                     .type(UniqueIdentifier.UniqueIdentifierType.F)
-                                    .value("JHNDOE00A01B157N")
+                                    .value(FISCAL_CODE)
                                     .build())
                             .build())
                     .build()))
@@ -337,19 +324,37 @@ class MdbServiceImplTest {
   }
 
   private DemandPaymentNoticeResponse buildDemandResponse() throws DatatypeConfigurationException {
-    return DemandPaymentNoticeResponse.builder()
-        .qrCode(CtQrCode.builder().noticeNumber(NAV).fiscalCode("JHNDOE00A01B157N").build())
-        .paymentList(
-            CtPaymentOptionsDescriptionList.builder()
-                .paymentOptionDescription(
-                    Collections.singletonList(
-                        CtPaymentOptionDescription.builder()
-                            .paymentNote("Note")
-                            .amount(BigDecimal.TEN)
-                            .dueDate(DatatypeFactory.newInstance().newXMLGregorianCalendar())
-                            .options(StAmountOptionPSP.ANY)
-                            .build()))
-                .build())
-        .build();
+    CtPaymentOptionDescription paymentOptionDescription = new CtPaymentOptionDescription();
+    paymentOptionDescription.setPaymentNote("Note");
+    paymentOptionDescription.setAmount(BigDecimal.TEN);
+    paymentOptionDescription.setDueDate(DatatypeFactory.newInstance().newXMLGregorianCalendar());
+    paymentOptionDescription.setOptions(StAmountOptionPSP.ANY);
+
+    CtPaymentOptionsDescriptionList paymentOptionsDescriptionList =
+        new CtPaymentOptionsDescriptionList();
+    paymentOptionsDescriptionList.getPaymentOptionDescription().add(paymentOptionDescription);
+
+    CtQrCode ctQrCode = new CtQrCode();
+    ctQrCode.setFiscalCode(FISCAL_CODE);
+    ctQrCode.setNoticeNumber(NAV);
+
+    DemandPaymentNoticeResponse demandPaymentNoticeResponse = new DemandPaymentNoticeResponse();
+    demandPaymentNoticeResponse.setQrCode(ctQrCode);
+    demandPaymentNoticeResponse.setPaymentList(paymentOptionsDescriptionList);
+    demandPaymentNoticeResponse.setOutcome(StOutcome.OK);
+
+    return demandPaymentNoticeResponse;
+  }
+
+  private DemandPaymentNoticeResponse buildInvalidDemandResponse() {
+    CtQrCode ctQrCode = new CtQrCode();
+    ctQrCode.setFiscalCode(FISCAL_CODE);
+    ctQrCode.setNoticeNumber(NAV);
+
+    DemandPaymentNoticeResponse demandPaymentNoticeResponse = new DemandPaymentNoticeResponse();
+    demandPaymentNoticeResponse.setQrCode(ctQrCode);
+    demandPaymentNoticeResponse.setOutcome(StOutcome.KO);
+
+    return demandPaymentNoticeResponse;
   }
 }

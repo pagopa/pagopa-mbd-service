@@ -16,11 +16,11 @@ import it.gov.pagopa.mbd.service.model.mdb.PaymentNotice;
 import it.gov.pagopa.mbd.service.model.mdb.PaymentNoticeV2;
 import it.gov.pagopa.mbd.service.model.mdb.ReturnUrlsV2;
 import it.gov.pagopa.mbd.service.model.mdb.UniqueIdentifier;
-import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.CtPaymentOptionDescription;
-import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.CtPaymentOptionsDescriptionList;
-import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeRequest;
-import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeResponse;
 import it.gov.pagopa.mbd.service.util.Constants;
+import it.gov.pagopa.pagopa_api.node.nodeforpsp.CtPaymentOptionDescription;
+import it.gov.pagopa.pagopa_api.node.nodeforpsp.CtPaymentOptionsDescriptionList;
+import it.gov.pagopa.pagopa_api.node.nodeforpsp.DemandPaymentNoticeRequest;
+import it.gov.pagopa.pagopa_api.node.nodeforpsp.DemandPaymentNoticeResponse;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Base64;
@@ -70,14 +70,15 @@ public class RequestMapper {
             paymentNotice.getProvince(),
             paymentNotice.getDocumentHash());
 
-    return DemandPaymentNoticeRequest.builder()
-        .idPSP(idPsp)
-        .idBrokerPSP(idBrokerPsp)
-        .idChannel(idChannel)
-        .idSoggettoServizio(mbdServiceId)
-        .password("PLACEHOLDER")
-        .datiSpecificiServizio(Base64.getMimeEncoder().encode(formattedServiceData.getBytes()))
-        .build();
+    DemandPaymentNoticeRequest demandRequest = new DemandPaymentNoticeRequest();
+    demandRequest.setIdPSP(idPsp);
+    demandRequest.setIdBrokerPSP(idBrokerPsp);
+    demandRequest.setIdChannel(idChannel);
+    demandRequest.setIdSoggettoServizio(mbdServiceId);
+    demandRequest.setPassword("PLACEHOLDER");
+    demandRequest.setDatiSpecificiServizio(
+        Base64.getMimeEncoder().encode(formattedServiceData.getBytes()));
+    return demandRequest;
   }
 
   public static GetCartRequest mapCartRequest(
