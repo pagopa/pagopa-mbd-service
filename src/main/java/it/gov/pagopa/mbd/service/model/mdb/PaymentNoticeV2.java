@@ -16,7 +16,7 @@ public class PaymentNoticeV2 {
 
   @NotNull @Valid private Debtor debtor;
 
-  @Schema(example = "16", description = "MBD amount.")
+  @Schema(example = "1600", description = "MBD amount (Eurocents value).")
   @NotNull
   private Long amount;
 

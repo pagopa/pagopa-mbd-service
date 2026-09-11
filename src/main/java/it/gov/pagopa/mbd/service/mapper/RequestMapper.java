@@ -21,6 +21,8 @@ import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.CtPaymentOptionsDescr
 import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeRequest;
 import it.gov.pagopa.mbd.service.model.xml.node.nodeforpsp.DemandPaymentNoticeResponse;
 import it.gov.pagopa.mbd.service.util.Constants;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
@@ -60,7 +62,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     String formattedServiceData =
         String.format(
             DEMAND_PAYMENT_SERVICE_DATA,
-            paymentNotice.getAmount(),
+            formatEuroCentAmount(paymentNotice.getAmount()),
             debtor.getUniqueIdentifier().getType(),
             debtor.getUniqueIdentifier().getValue(),
             debtor.getFullName(),
@@ -195,6 +197,12 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     } else {
       throw new IllegalArgumentException("Invalid fiscal code or VAT number format");
     }
+  }
+
+  private static BigDecimal formatEuroCentAmount(long grandTotal) {
+    BigDecimal amount = new BigDecimal(grandTotal);
+    BigDecimal divider = new BigDecimal(100);
+    return amount.divide(divider, 2, RoundingMode.UNNECESSARY);
   }
 
   private RequestMapper() {}
