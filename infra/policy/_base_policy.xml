@@ -3,16 +3,15 @@
     <base/>
     <!-- rate limit by subscription key -->
     <rate-limit calls="300" renewal-period="10" remaining-calls-variable-name="remainingCallsPerSubscription"/>
-<!--    <set-backend-service base-url="https://${hostname}/pagopa-mbd-service"/>-->
+
     <!-- Calling Authorizer's fragment -->
     <set-variable name="application_domain" value="mbd" />
     <set-variable name="metadata" value="no-metadata" />
     <choose>
-        <!-- Making sure that will excludes all APIs that does not includes CI fiscal code -->
-        <when condition="@(context.Request.MatchedParameters.ContainsKey("organization-fiscal-code") && !context.Request.Headers.GetValueOrDefault("Ocp-Apim-Subscription-Key", "").Equals(""))">
+        <!-- Making sure that will exclude all APIs that does not include CI fiscal code -->
+        <when condition="@(context.Request.MatchedParameters.ContainsKey("organization-fiscal-code"))">
           <set-variable name="authorization_entity" value="@(context.Request.MatchedParameters["organization-fiscal-code"])" />
           <include-fragment fragment-id="authorizer" />
-          <include-fragment fragment-id="segregation-codes-gpd" />
         </when>
     </choose>
   </inbound>
