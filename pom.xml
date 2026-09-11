@@ -13,7 +13,7 @@
 
   <groupId>it.gov.pagopa.ebollo</groupId>
   <artifactId>mbd-service</artifactId>
-  <version>1.2.11-2-PAGOPA-3747-ebollo-2</version>
+  <version>1.2.11-3-PAGOPA-3747-ebollo-2</version>
   <name>@e.bollo Service</name>
   <description>MBD - @e.bollo Service</description>
 
