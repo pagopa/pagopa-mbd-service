@@ -4,7 +4,7 @@ locals {
     description           = "API for eBollo 2.0"
     path                  = "pagopa-mbd-service"
     subscription_required = true
-    service_url           = var.env == "prod" ? "https://ebollo.itn.internal.platform.pagopa.it/pagopa-mbd-service" : "https://ebollo.itn.internal.${var.env}.platform.pagopa.it/pagopa-mbd-service"
+    service_url           = "https://${var.hostname}/pagopa-mbd-service"
   }
   host     = "api.${var.apim_dns_zone_prefix}.${var.external_domain}"
   hostname = var.hostname
