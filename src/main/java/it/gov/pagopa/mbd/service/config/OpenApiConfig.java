@@ -14,9 +14,12 @@ import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import io.swagger.v3.oas.models.servers.ServerVariable;
 import io.swagger.v3.oas.models.servers.ServerVariables;
-
-import java.util.*;
-
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import org.checkerframework.checker.nullness.qual.NonNull;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,8 +35,12 @@ public class OpenApiConfig {
   public OpenAPI customOpenAPI(
       @Value("${info.application.name}") String appName,
       @Value("${info.application.description}") String appDescription,
-      @Value("${info.application.version}") String appVersion) {
+      @Value("${info.application.version}") String appVersion,
+      @Value("${server.port}") String serverPort) {
     return new OpenAPI()
+        .servers(
+            createServers(
+                serverPort, new ServerVariable()._enum(List.of("/v1", "/v2"))._default("/v1")))
         .components(
             new Components()
                 .addSecuritySchemes(
@@ -45,78 +52,10 @@ public class OpenApiConfig {
                         .in(SecurityScheme.In.HEADER)))
         .info(
             new Info()
-                .title("EBollo 2.0 - Service for partner")
+                .title(appName)
                 .version(appVersion)
                 .description(appDescription)
                 .termsOfService("https://www.pagopa.gov.it/"));
-  }
-
-  @Bean
-  public GroupedOpenApi apiV1() {
-    List<Server> serverInfo = new ArrayList<>();
-
-    serverInfo.add(createServer(".uat", "pagopa-mbd-service", "v1", "EBollo 2.0 Test environment"));
-    serverInfo.add(createServer("", "pagopa-mbd-service", "v1", "EBollo 2.0 Production Environment"));
-
-    return GroupedOpenApi.builder()
-        .group("v1")
-        .displayName("Marca da Bollo Digitale v1")
-        .pathsToMatch("/v1/**")
-        .addOpenApiCustomizer(removeVersionFromPaths("/v1"))
-        .addOpenApiCustomizer(customizeServer(serverInfo))
-        .build();
-  }
-
-  @Bean
-  public GroupedOpenApi apiV2() {
-    List<Server> serverInfo = new ArrayList<>();
-
-    serverInfo.add(createServer(".uat", "pagopa-mbd-service", "v2", "EBollo 2.0 Test environment"));
-    serverInfo.add(createServer("", "pagopa-mbd-service", "v2", "EBollo 2.0 Production Environment"));
-    return GroupedOpenApi.builder()
-        .group("v2")
-        .displayName("Marca da Bollo Digitale v2")
-        .pathsToMatch("/v2/**")
-        .addOpenApiCustomizer(removeVersionFromPaths("/v2"))
-        .addOpenApiCustomizer(customizeServer(serverInfo))
-        .build();
-  }
-
-  /**
-   * Removes the version prefix (e.g. "/v1") from the documented paths and instead appends it to
-   * the server URLs, so that the path shown in the swagger does not contain the version, while
-   * the server url does.
-   */
-  private OpenApiCustomizer removeVersionFromPaths(String versionPrefix) {
-    return openApi -> {
-      Paths oldPaths = openApi.getPaths();
-      if (oldPaths != null) {
-        Paths newPaths = new Paths();
-        oldPaths.forEach(
-            (path, pathItem) -> {
-              String newPath =
-                  path.startsWith(versionPrefix) ? path.substring(versionPrefix.length()) : path;
-              if (newPath.isEmpty()) {
-                newPath = "/";
-              }
-              newPaths.addPathItem(newPath, pathItem);
-            });
-        openApi.setPaths(newPaths);
-      }
-
-      Optional.ofNullable(openApi.getServers())
-          .orElse(Collections.emptyList())
-          .forEach(
-              server -> {
-                if (server.getUrl() != null) {
-                  server.setUrl(server.getUrl() + versionPrefix);
-                }
-                Optional.ofNullable(server.getVariables())
-                    .map(variables -> variables.get("basePath"))
-                    .ifPresent(
-                        basePath -> basePath.setDefault(basePath.getDefault() + versionPrefix));
-              });
-    };
   }
 
   @Bean
@@ -194,24 +133,74 @@ public class OpenApiConfig {
                 });
   }
 
-    private Server createServer(String env, String service, String version, String description) {
-        String baseUrl = "https://api%s.platform.pagopa.it/%s";
-        String url = String.format(baseUrl, env, service);
-        if (version != null) {
-            url = String.format("%s/%s", url, version);
-        }
-        Server server = new Server();
-        server.setUrl(url);
-        server.setDescription(description);
-        return server;
-    }
+  @Bean
+  public Map<String, GroupedOpenApi> configureGroupOpenApi(
+      Map<String, GroupedOpenApi> groupOpenApi, @Value("${server.port}") String serverPort) {
+    groupOpenApi.forEach(
+        (id, groupedOpenApi) ->
+            groupedOpenApi
+                .getOpenApiCustomizers()
+                .add(
+                    openApi -> {
+                      if (id.equals("v1")) {
+                        openApi.getInfo().setDescription("Marca da Bollo Digitale v1");
+                        openApi.setServers(
+                            createServers(
+                                serverPort,
+                                new ServerVariable()._enum(List.of("/v1"))._default("/v1")));
+                        removeVersionFromPaths(openApi, "/v1");
+                      } else if (id.equals("v2")) {
+                        openApi.getInfo().setDescription("Marca da Bollo Digitale v2");
+                        openApi.setServers(
+                            createServers(
+                                serverPort,
+                                new ServerVariable()._enum(List.of("/v2"))._default("/v2")));
+                        removeVersionFromPaths(openApi, "/v2");
+                      }
+                    }));
+    return groupOpenApi;
+  }
 
-    private OpenApiCustomizer customizeServer(List<Server> serverInfo) {
-        return openApi -> {
-            if (openApi.getPaths() == null) return;
-
-            // set servers
-            openApi.setServers(serverInfo);
-        };
+  /**
+   * Removes the version prefix (e.g. "/v1") from the documented paths and instead appends it to the
+   * server URLs, so that the path shown in the swagger does not contain the version, while the
+   * server url does.
+   */
+  private void removeVersionFromPaths(OpenAPI openApi, String versionPrefix) {
+    Paths oldPaths = openApi.getPaths();
+    if (oldPaths != null) {
+      Paths newPaths = new Paths();
+      oldPaths.forEach(
+          (path, pathItem) -> {
+            String newPath =
+                path.startsWith(versionPrefix) ? path.substring(versionPrefix.length()) : path;
+            if (newPath.isEmpty()) {
+              newPath = "/";
+            }
+            newPaths.addPathItem(newPath, pathItem);
+          });
+      openApi.setPaths(newPaths);
     }
+  }
+
+  private static @NonNull List<Server> createServers(String serverPort, ServerVariable version) {
+    String localPath = String.format("%s://%s:%s", "http", "localhost", serverPort);
+    return List.of(
+        new Server().url(localPath),
+        new Server()
+            .url("https://{host}{basePath}{version}")
+            .variables(
+                new ServerVariables()
+                    .addServerVariable(
+                        "host",
+                        new ServerVariable()
+                            ._enum(
+                                List.of(
+                                    "api.dev.platform.pagopa.it",
+                                    "api.uat.platform.pagopa.it",
+                                    "api.platform.pagopa.it"))
+                            ._default("api.dev.platform.pagopa.it"))
+                    .addServerVariable("basePath", new ServerVariable()._default(BASE_PATH))
+                    .addServerVariable("version", version)));
+  }
 }

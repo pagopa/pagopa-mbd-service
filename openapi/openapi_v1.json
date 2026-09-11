@@ -1,19 +1,36 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "description": "MBD - @e.bollo Service",
+    "description": "Marca da Bollo Digitale v1",
     "termsOfService": "https://www.pagopa.gov.it/",
-    "title": "EBollo 2.0 - Service for partner",
+    "title": "@e.bollo Service",
     "version": "1.2.11-3-PAGOPA-3747-ebollo-2"
   },
   "servers": [
     {
-      "url": "https://api.uat.platform.pagopa.it/pagopa-mbd-service/v1",
-      "description": "EBollo 2.0 Test environment"
+      "url": "http://localhost:8080"
     },
     {
-      "url": "https://api.platform.pagopa.it/pagopa-mbd-service/v1",
-      "description": "EBollo 2.0 Production Environment"
+      "url": "https://{host}{basePath}{version}",
+      "variables": {
+        "basePath": {
+          "default": "/pagopa-mbd-service"
+        },
+        "host": {
+          "default": "api.dev.platform.pagopa.it",
+          "enum": [
+            "api.dev.platform.pagopa.it",
+            "api.uat.platform.pagopa.it",
+            "api.platform.pagopa.it"
+          ]
+        },
+        "version": {
+          "default": "/v1",
+          "enum": [
+            "/v1"
+          ]
+        }
+      }
     }
   ],
   "tags": [
@@ -46,7 +63,6 @@
         ],
         "summary": "health check",
         "tags": [
-          "MBD - v1",
           "Home"
         ]
       }
@@ -331,9 +347,9 @@
         "properties": {
           "amount": {
             "type": "integer",
-            "description": "MBD amount.",
+            "description": "MBD amount (Eurocents value).",
             "format": "int64",
-            "example": 16
+            "example": 1600
           },
           "documentHash": {
             "maxLength": 44,

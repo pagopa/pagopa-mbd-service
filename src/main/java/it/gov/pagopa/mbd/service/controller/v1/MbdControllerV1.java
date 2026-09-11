@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.gov.pagopa.mbd.service.controller.v2.MbdControllerV2;
 import it.gov.pagopa.mbd.service.exception.AppException;
-import it.gov.pagopa.mbd.service.model.AppInfo;
 import it.gov.pagopa.mbd.service.model.ProblemJson;
 import it.gov.pagopa.mbd.service.model.carts.GetCartErrorResponse;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
@@ -47,18 +46,6 @@ public class MbdControllerV1 {
 
   public MbdControllerV1(MbdService mdbService) {
     this.mdbService = mdbService;
-  }
-
-  @Operation(
-      summary = "health check",
-      description = "Return OK if application is started",
-      security = {@SecurityRequirement(name = "ApiKey")},
-      tags = {"Home"})
-  @GetMapping(value = "/info")
-  @ResponseStatus(HttpStatus.OK)
-  public Mono<ResponseEntity<AppInfo>> healthCheck() {
-    AppInfo info = AppInfo.builder().name(name).version(version).environment(environment).build();
-    return Mono.just(ResponseEntity.status(HttpStatus.OK).body(info));
   }
 
   /**
