@@ -309,7 +309,6 @@ class MdbServiceImplTest {
 
   private GetMbdRequestV2 buildGetMbdRequestV2(int documentHashLength) {
     return GetMbdRequestV2.builder()
-        .idCIService("1000")
         .paymentNotices(
             Collections.singletonList(
                 PaymentNoticeV2.builder()

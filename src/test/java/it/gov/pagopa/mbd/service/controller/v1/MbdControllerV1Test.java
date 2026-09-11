@@ -11,12 +11,9 @@ import it.gov.pagopa.mbd.service.model.ProblemJson;
 import it.gov.pagopa.mbd.service.model.carts.GetCartErrorResponse;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
-import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
 import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
 import it.gov.pagopa.mbd.service.model.mdb.PaymentNotice;
-import it.gov.pagopa.mbd.service.model.mdb.PaymentNoticeV2;
 import it.gov.pagopa.mbd.service.model.mdb.ReturnUrls;
-import it.gov.pagopa.mbd.service.model.mdb.ReturnUrlsV2;
 import it.gov.pagopa.mbd.service.service.MbdService;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolationException;
@@ -62,10 +59,10 @@ class MbdControllerV1Test {
         .uri("/v1/organizations/test/mbd")
         .bodyValue(
             objectMapper.writeValueAsBytes(
-                GetMbdRequestV2.builder()
+                GetMbdRequest.builder()
                     .idCIService("test")
-                    .paymentNotices(Collections.singletonList(PaymentNoticeV2.builder().build()))
-                    .returnUrls(ReturnUrlsV2.builder().build())
+                    .paymentNotices(Collections.singletonList(PaymentNotice.builder().build()))
+                    .returnUrls(ReturnUrls.builder().build())
                     .build()))
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .exchange()

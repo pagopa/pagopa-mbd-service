@@ -60,7 +60,6 @@ class MbdControllerV2Test {
         .bodyValue(
             objectMapper.writeValueAsBytes(
                 GetMbdRequestV2.builder()
-                    .idCIService("test")
                     .paymentNotices(Collections.singletonList(PaymentNoticeV2.builder().build()))
                     .returnUrls(ReturnUrlsV2.builder().build())
                     .build()))
@@ -88,7 +87,6 @@ class MbdControllerV2Test {
         .bodyValue(
             objectMapper.writeValueAsBytes(
                 GetMbdRequestV2.builder()
-                    .idCIService("test")
                     .paymentNotices(Collections.singletonList(PaymentNoticeV2.builder().build()))
                     .returnUrls(ReturnUrlsV2.builder().errorUrl(TEST_URL).build())
                     .build()))
@@ -116,7 +114,6 @@ class MbdControllerV2Test {
         .bodyValue(
             objectMapper.writeValueAsBytes(
                 GetMbdRequestV2.builder()
-                    .idCIService("test")
                     .paymentNotices(Collections.singletonList(PaymentNoticeV2.builder().build()))
                     .returnUrls(ReturnUrlsV2.builder().errorUrl(TEST_URL).build())
                     .build()))
@@ -143,7 +140,6 @@ class MbdControllerV2Test {
         .bodyValue(
             objectMapper.writeValueAsBytes(
                 GetMbdRequestV2.builder()
-                    .idCIService("test")
                     .paymentNotices(Collections.singletonList(PaymentNoticeV2.builder().build()))
                     .returnUrls(ReturnUrlsV2.builder().errorUrl(TEST_URL).build())
                     .build()))
