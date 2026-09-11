@@ -32,9 +32,7 @@ public class RequestMapper {
   private static final String DEMAND_PAYMENT_SERVICE_DATA =
 """
 <?xml version="1.0" encoding="utf-8"?>
-<service xmlns="http://PuntoAccessoPSP.spcoop.gov.it/GeneralService"
-xsi:schemaLocation="http://PuntoAccessoPSP.spcoop.gov.it/GeneralService schema.xsd"
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<marcaDaBollo xmlns="http://www.agenziaentrate.gov.it/2014/MarcaDaBollo">
   <amount>%s</amount>
   <debtor>
     <uniqueIdentifier>
@@ -47,7 +45,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <fiscalCode>%s</fiscalCode>
   <province>%s</province>
   <documentHash>%s</documentHash>
-</service>
+</marcaDaBollo>
 """;
 
   public static DemandPaymentNoticeRequest mapDemandPaymentNoticeRequest(
