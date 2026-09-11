@@ -81,6 +81,7 @@ microservice-chart:
     MBD_ID_PSP: 'AGID_01'
     MBD_ID_BROKER_PSP: '97735020584'
     MBD_CHANNEL_ID: '97735020584_10'
+    MBD_SERVICE_ID: '00005'
     CORS_CONFIGURATION: '{"origins": ["*"], "methods": ["*"]}'
     OTEL_SERVICE_NAME: "pagopa-mbd-service"
     OTEL_RESOURCE_ATTRIBUTES: "deployment.environment=prod"

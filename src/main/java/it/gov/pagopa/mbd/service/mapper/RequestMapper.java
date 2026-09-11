@@ -52,6 +52,7 @@ public class RequestMapper {
       String idPsp,
       String idBrokerPsp,
       String idChannel,
+      String mbdServiceId,
       String organizationFiscalCode,
       GetMbdRequestV2 getMdbRequest) {
 
@@ -73,7 +74,7 @@ public class RequestMapper {
         .idPSP(idPsp)
         .idBrokerPSP(idBrokerPsp)
         .idChannel(idChannel)
-        .idSoggettoServizio(getMdbRequest.getIdCIService())
+        .idSoggettoServizio(mbdServiceId)
         .password("PLACEHOLDER")
         .datiSpecificiServizio(Base64.getMimeEncoder().encode(formattedServiceData.getBytes()))
         .build();
@@ -153,7 +154,6 @@ public class RequestMapper {
 
   public static GetMbdRequestV2 mapGetMbdRequestToGetMbdRequestV2(GetMbdRequest request) {
     return GetMbdRequestV2.builder()
-        .idCIService(request.getIdCIService())
         .paymentNotices(
             request.getPaymentNotices().stream()
                 .map(
