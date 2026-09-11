@@ -52,7 +52,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       String idPsp,
       String idBrokerPsp,
       String idChannel,
-      String fiscalCodeEC,
+      String organizationFiscalCode,
       GetMbdRequestV2 getMdbRequest) {
 
     PaymentNoticeV2 paymentNotice = getMdbRequest.getPaymentNotices().get(0);
@@ -65,7 +65,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             debtor.getUniqueIdentifier().getValue(),
             debtor.getFullName(),
             debtor.getEmail(),
-            fiscalCodeEC,
+            organizationFiscalCode,
             paymentNotice.getProvince(),
             paymentNotice.getDocumentHash());
 

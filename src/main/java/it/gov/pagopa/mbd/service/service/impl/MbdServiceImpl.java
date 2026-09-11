@@ -18,7 +18,6 @@ import jakarta.validation.Validator;
 import java.util.HashMap;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.oxm.XmlMappingException;
@@ -29,7 +28,9 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class MbdServiceImpl implements MbdService {
 
-  public static final String DEMAND_PAYMENT_NOTICE_RESPONSE_KEY = "demandPaymentNoticeResponse";
+  private static final String DEMAND_PAYMENT_NOTICE_RESPONSE_KEY = "demandPaymentNoticeResponse";
+  private static final String GET_MBD_V1_PATH = "%s/v1/organizations/%s/receipts/%s";
+  private static final String GET_MBD_V2_PATH = "%s/v2/organizations/%s/noticeNumber/%s/mbd";
 
   private final Validator validator;
   private final ReactiveClient reactiveSoapClient;
@@ -56,7 +57,7 @@ public class MbdServiceImpl implements MbdService {
 
   /** {@inheritDoc} */
   @Override
-  public Mono<GetCartResponse> getMbd(String fiscalCodeEC, GetMbdRequest request) {
+  public Mono<GetCartResponse> getMbd(String organizationFiscalCode, GetMbdRequest request) {
     HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap<>();
     return Mono.just(request)
         .doFirst(
@@ -78,7 +79,7 @@ public class MbdServiceImpl implements MbdService {
               GetMbdRequestV2 getMbdRequestV2 =
                   RequestMapper.mapGetMbdRequestToGetMbdRequestV2(item);
               return RequestMapper.mapDemandPaymentNoticeRequest(
-                  idPsp, idBrokerPsp, channelId, fiscalCodeEC, getMbdRequestV2);
+                  idPsp, idBrokerPsp, channelId, organizationFiscalCode, getMbdRequestV2);
             })
         .onErrorMap(
             XmlMappingException.class,
@@ -118,16 +119,17 @@ public class MbdServiceImpl implements MbdService {
               String noticeNumber =
                   hashMap.get(DEMAND_PAYMENT_NOTICE_RESPONSE_KEY).getQrCode().getNoticeNumber();
               item.setNav(noticeNumber);
-              item.setMbdDownloadLink(
-                  StringUtils.joinWith(
-                      "/", mdbLinkBaseUrl, "organizations", fiscalCodeEC, "receipt", noticeNumber));
+              String mbdDownloadLink =
+                  String.format(
+                      GET_MBD_V1_PATH, mdbLinkBaseUrl, organizationFiscalCode, noticeNumber);
+              item.setMbdDownloadLink(mbdDownloadLink);
               return item;
             });
   }
 
   /** {@inheritDoc} */
   @Override
-  public Mono<GetCartResponse> getMbdV2(String fiscalCodeEC, GetMbdRequestV2 request) {
+  public Mono<GetCartResponse> getMbdV2(String organizationFiscalCode, GetMbdRequestV2 request) {
     HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap<>();
     return Mono.just(request)
         .doFirst(
@@ -147,7 +149,7 @@ public class MbdServiceImpl implements MbdService {
         .map(
             item ->
                 RequestMapper.mapDemandPaymentNoticeRequest(
-                    idPsp, idBrokerPsp, channelId, fiscalCodeEC, item))
+                    idPsp, idBrokerPsp, channelId, organizationFiscalCode, item))
         .onErrorMap(
             XmlMappingException.class,
             e -> {
@@ -186,17 +188,18 @@ public class MbdServiceImpl implements MbdService {
               String noticeNumber =
                   hashMap.get(DEMAND_PAYMENT_NOTICE_RESPONSE_KEY).getQrCode().getNoticeNumber();
               item.setNav(noticeNumber);
-              item.setMbdDownloadLink(
-                  StringUtils.joinWith(
-                      "/", mdbLinkBaseUrl, "organizations", fiscalCodeEC, "receipt", noticeNumber));
+              String mbdDownloadLink =
+                  String.format(
+                      GET_MBD_V2_PATH, mdbLinkBaseUrl, organizationFiscalCode, noticeNumber);
+              item.setMbdDownloadLink(mbdDownloadLink);
               return item;
             });
   }
 
   /** {@inheritDoc} */
   @Override
-  public Mono<GetMdbReceipt> getPaymentReceipts(String fiscalCode, String nav) {
-    return Mono.zip(Mono.just(fiscalCode), Mono.just(nav).map(item -> nav.substring(1)))
+  public Mono<GetMdbReceipt> getPaymentReceipts(String organizationFiscalCode, String nav) {
+    return Mono.zip(Mono.just(organizationFiscalCode), Mono.just(nav).map(item -> nav.substring(1)))
         .flatMap(tuple -> reactiveSoapClient.getPaymentReceipt(tuple.getT1(), tuple.getT2()))
         .onErrorMap(
             WebClientException.class,
