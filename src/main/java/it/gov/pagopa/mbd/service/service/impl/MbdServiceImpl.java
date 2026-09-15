@@ -34,6 +34,7 @@ public class MbdServiceImpl implements MbdService {
 
   private final Validator validator;
   private final ReactiveClient reactiveSoapClient;
+  private final RequestMapper requestMapper;
   private final String mdbLinkBaseUrl;
   private final String idPsp;
   private final String idBrokerPsp;
@@ -44,6 +45,7 @@ public class MbdServiceImpl implements MbdService {
   public MbdServiceImpl(
       Validator validator,
       ReactiveClient reactiveSoapClient,
+      RequestMapper requestMapper,
       @Value("${mbd.link.baseUrl}") String mdbLinkBaseUrl,
       @Value("${mbd.mapper.idPsp}") String idPsp,
       @Value("${mbd.mapper.idBrokerPsp}") String idBrokerPsp,
@@ -51,6 +53,7 @@ public class MbdServiceImpl implements MbdService {
       @Value("${mbd.service.id}") String mbdServiceId) {
     this.validator = validator;
     this.reactiveSoapClient = reactiveSoapClient;
+    this.requestMapper = requestMapper;
     this.mdbLinkBaseUrl = mdbLinkBaseUrl;
     this.idPsp = idPsp;
     this.idBrokerPsp = idBrokerPsp;
@@ -80,8 +83,8 @@ public class MbdServiceImpl implements MbdService {
         .map(
             item -> {
               GetMbdRequestV2 getMbdRequestV2 =
-                  RequestMapper.mapGetMbdRequestToGetMbdRequestV2(item);
-              return RequestMapper.mapDemandPaymentNoticeRequest(
+                      requestMapper.mapGetMbdRequestToGetMbdRequestV2(item);
+              return requestMapper.mapDemandPaymentNoticeRequest(
                   idPsp,
                   idBrokerPsp,
                   channelId,
@@ -107,7 +110,7 @@ public class MbdServiceImpl implements MbdService {
         .map(
             demandPaymentNoticeResponse -> {
               hashMap.put(DEMAND_PAYMENT_NOTICE_RESPONSE_KEY, demandPaymentNoticeResponse);
-              return RequestMapper.mapCartRequest(request, demandPaymentNoticeResponse);
+              return requestMapper.mapCartRequest(request, demandPaymentNoticeResponse);
             })
         .onErrorMap(
             CartMappingException.class,
@@ -156,7 +159,7 @@ public class MbdServiceImpl implements MbdService {
             })
         .map(
             item ->
-                RequestMapper.mapDemandPaymentNoticeRequest(
+                requestMapper.mapDemandPaymentNoticeRequest(
                     idPsp, idBrokerPsp, channelId, mbdServiceId, organizationFiscalCode, item))
         .onErrorMap(
             XmlMappingException.class,
@@ -176,7 +179,7 @@ public class MbdServiceImpl implements MbdService {
         .map(
             demandPaymentNoticeResponse -> {
               hashMap.put(DEMAND_PAYMENT_NOTICE_RESPONSE_KEY, demandPaymentNoticeResponse);
-              return RequestMapper.mapCartV2Request(request, demandPaymentNoticeResponse);
+              return requestMapper.mapCartV2Request(request, demandPaymentNoticeResponse);
             })
         .onErrorMap(
             CartMappingException.class,

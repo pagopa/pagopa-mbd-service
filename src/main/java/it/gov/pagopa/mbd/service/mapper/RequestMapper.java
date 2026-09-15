@@ -3,6 +3,9 @@ package it.gov.pagopa.mbd.service.mapper;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.hibernate.validator.internal.util.Contracts.assertTrue;
 
+import it.gov.agenziaentrate._2014.marcadabollo.DebtorInfo;
+import it.gov.agenziaentrate._2014.marcadabollo.ObjectFactory;
+import it.gov.agenziaentrate._2014.marcadabollo.TipoMarcaDaBollo;
 import it.gov.pagopa.mbd.service.exception.CartMappingException;
 import it.gov.pagopa.mbd.service.model.carts.CartPaymentNotice;
 import it.gov.pagopa.mbd.service.model.carts.CartReturnUrls;
@@ -21,34 +24,32 @@ import it.gov.pagopa.pagopa_api.node.nodeforpsp.CtPaymentOptionDescription;
 import it.gov.pagopa.pagopa_api.node.nodeforpsp.CtPaymentOptionsDescriptionList;
 import it.gov.pagopa.pagopa_api.node.nodeforpsp.DemandPaymentNoticeRequest;
 import it.gov.pagopa.pagopa_api.node.nodeforpsp.DemandPaymentNoticeResponse;
+import it.gov.pagopa.pagopa_api.pa.pafornode.CtEntityUniqueIdentifier;
+import it.gov.pagopa.pagopa_api.pa.pafornode.StEntityUniqueIdentifierType;
+import jakarta.xml.bind.JAXBElement;
+import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import javax.xml.transform.stream.StreamResult;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.stereotype.Component;
 
+@Component
 public class RequestMapper {
 
-  private static final String DEMAND_PAYMENT_SERVICE_DATA =
-"""
-<?xml version="1.0" encoding="utf-8"?>
-<marcaDaBollo xmlns="http://www.agenziaentrate.gov.it/2014/MarcaDaBollo">
-  <amount>%s</amount>
-  <debtor>
-    <uniqueIdentifier>
-      <entityUniqueIdentifierType>%s</entityUniqueIdentifierType>
-      <entityUniqueIdentifierValue>%s</entityUniqueIdentifierValue>
-    </uniqueIdentifier>
-    <fullName>%s</fullName>
-    <email>%s</email>
-   </debtor>
-  <fiscalCode>%s</fiscalCode>
-  <province>%s</province>
-  <documentHash>%s</documentHash>
-</marcaDaBollo>
-""";
+  private static final ObjectFactory objectFactory = new ObjectFactory();
 
-  public static DemandPaymentNoticeRequest mapDemandPaymentNoticeRequest(
+  private final Jaxb2Marshaller jaxb2Marshaller;
+
+  public RequestMapper(Jaxb2Marshaller jaxb2Marshaller) {
+    this.jaxb2Marshaller = jaxb2Marshaller;
+  }
+
+  public DemandPaymentNoticeRequest mapDemandPaymentNoticeRequest(
       String idPsp,
       String idBrokerPsp,
       String idChannel,
@@ -58,17 +59,26 @@ public class RequestMapper {
 
     PaymentNoticeV2 paymentNotice = getMdbRequest.getPaymentNotices().get(0);
     Debtor debtor = paymentNotice.getDebtor();
-    String formattedServiceData =
-        String.format(
-            DEMAND_PAYMENT_SERVICE_DATA,
-            formatEuroCentAmount(paymentNotice.getAmount()),
-            debtor.getUniqueIdentifier().getType(),
-            debtor.getUniqueIdentifier().getValue(),
-            debtor.getFullName(),
-            debtor.getEmail(),
-            organizationFiscalCode,
-            paymentNotice.getProvince(),
-            paymentNotice.getDocumentHash());
+
+    CtEntityUniqueIdentifier entityUniqueIdentifier = new CtEntityUniqueIdentifier();
+    StEntityUniqueIdentifierType identifierType =
+        StEntityUniqueIdentifierType.fromValue(debtor.getUniqueIdentifier().getType().name());
+    entityUniqueIdentifier.setEntityUniqueIdentifierType(identifierType);
+    entityUniqueIdentifier.setEntityUniqueIdentifierValue(debtor.getUniqueIdentifier().getValue());
+
+    DebtorInfo debtorInfo = new DebtorInfo();
+    debtorInfo.setEmail(debtor.getEmail());
+    debtorInfo.setFullName(debtor.getFullName());
+    debtorInfo.setUniqueIdentifier(entityUniqueIdentifier);
+
+    TipoMarcaDaBollo marcaDaBollo = new TipoMarcaDaBollo();
+    marcaDaBollo.setAmount(formatEuroCentAmount(paymentNotice.getAmount()));
+    marcaDaBollo.setDebtor(debtorInfo);
+    marcaDaBollo.setFiscalCode(organizationFiscalCode);
+    marcaDaBollo.setProvince(paymentNotice.getProvince());
+    marcaDaBollo.setDocumentHash(paymentNotice.getDocumentHash().getBytes(StandardCharsets.UTF_8));
+
+    String serviceDataXml = marshalMarcaDaBollo(marcaDaBollo);
 
     DemandPaymentNoticeRequest demandRequest = new DemandPaymentNoticeRequest();
     demandRequest.setIdPSP(idPsp);
@@ -77,11 +87,11 @@ public class RequestMapper {
     demandRequest.setIdSoggettoServizio(mbdServiceId);
     demandRequest.setPassword("PLACEHOLDER");
     demandRequest.setDatiSpecificiServizio(
-        Base64.getMimeEncoder().encode(formattedServiceData.getBytes()));
+        Base64.getMimeEncoder().encode(serviceDataXml.getBytes(StandardCharsets.UTF_8)));
     return demandRequest;
   }
 
-  public static GetCartRequest mapCartRequest(
+  public GetCartRequest mapCartRequest(
       GetMbdRequest request, DemandPaymentNoticeResponse demandPaymentNoticeResponse) {
     try {
       assertNotNull(demandPaymentNoticeResponse);
@@ -116,7 +126,7 @@ public class RequestMapper {
     }
   }
 
-  public static GetCartRequestV2 mapCartV2Request(
+  public GetCartRequestV2 mapCartV2Request(
       GetMbdRequestV2 request, DemandPaymentNoticeResponse demandPaymentNoticeResponse) {
     try {
       assertNotNull(demandPaymentNoticeResponse);
@@ -153,7 +163,7 @@ public class RequestMapper {
     }
   }
 
-  public static GetMbdRequestV2 mapGetMbdRequestToGetMbdRequestV2(GetMbdRequest request) {
+  public GetMbdRequestV2 mapGetMbdRequestToGetMbdRequestV2(GetMbdRequest request) {
     return GetMbdRequestV2.builder()
         .paymentNotices(
             request.getPaymentNotices().stream()
@@ -175,7 +185,7 @@ public class RequestMapper {
         .build();
   }
 
-  private static Debtor buildDebtor(PaymentNotice paymentNotice) {
+  private Debtor buildDebtor(PaymentNotice paymentNotice) {
     return Debtor.builder()
         .fullName(paymentNotice.getFirstName() + " " + paymentNotice.getLastName())
         .uniqueIdentifier(
@@ -187,8 +197,7 @@ public class RequestMapper {
         .build();
   }
 
-  private static UniqueIdentifier.UniqueIdentifierType extractUniqueIdentifierType(
-      String fiscalCode) {
+  private UniqueIdentifier.UniqueIdentifierType extractUniqueIdentifierType(String fiscalCode) {
     if (Constants.FISCAL_CODE_PATTERN.matcher(fiscalCode).matches()) {
       return UniqueIdentifier.UniqueIdentifierType.F;
     } else if (Constants.VAT_NUMBER_PATTERN.matcher(fiscalCode).matches()) {
@@ -198,11 +207,16 @@ public class RequestMapper {
     }
   }
 
-  private static BigDecimal formatEuroCentAmount(long grandTotal) {
+  private BigDecimal formatEuroCentAmount(long grandTotal) {
     BigDecimal amount = new BigDecimal(grandTotal);
     BigDecimal divider = new BigDecimal(100);
     return amount.divide(divider, 2, RoundingMode.UNNECESSARY);
   }
 
-  private RequestMapper() {}
+  private String marshalMarcaDaBollo(TipoMarcaDaBollo marcaDaBollo) {
+    JAXBElement<TipoMarcaDaBollo> element = objectFactory.createMarcaDaBollo(marcaDaBollo);
+    StringWriter writer = new StringWriter();
+    jaxb2Marshaller.marshal(element, new StreamResult(writer));
+    return writer.toString();
+  }
 }
