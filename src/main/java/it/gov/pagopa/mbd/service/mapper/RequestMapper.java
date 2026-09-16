@@ -3,6 +3,7 @@ package it.gov.pagopa.mbd.service.mapper;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.hibernate.validator.internal.util.Contracts.assertTrue;
 
+import it.gov.pagopa.mbd.service.client.SoapEnvelopeSerializer;
 import it.gov.pagopa.mbd.service.exception.CartMappingException;
 import it.gov.pagopa.mbd.service.model.carts.CartPaymentNotice;
 import it.gov.pagopa.mbd.service.model.carts.CartReturnUrls;
@@ -22,34 +23,28 @@ import it.gov.pagopa.pagopa_api.node.nodeforpsp.CtPaymentOptionsDescriptionList;
 import it.gov.pagopa.pagopa_api.node.nodeforpsp.DemandPaymentNoticeRequest;
 import it.gov.pagopa.pagopa_api.node.nodeforpsp.DemandPaymentNoticeResponse;
 import it.gov.pagopa.pagopa_api.pa.marcadabollo.DebtorInfo;
-import it.gov.pagopa.pagopa_api.pa.marcadabollo.ObjectFactory;
 import it.gov.pagopa.pagopa_api.pa.marcadabollo.TipoMarcaDaBollo;
 import it.gov.pagopa.pagopa_api.pa.pafornode.CtEntityUniqueIdentifier;
 import it.gov.pagopa.pagopa_api.pa.pafornode.StEntityUniqueIdentifierType;
-import jakarta.xml.bind.JAXBElement;
-import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
-import javax.xml.transform.stream.StreamResult;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RequestMapper {
 
-  private static final ObjectFactory objectFactory = new ObjectFactory();
-
-  private final Jaxb2Marshaller jaxb2Marshaller;
+  private final SoapEnvelopeSerializer soapEnvelopeSerializer;
   private final String mbdServiceId;
 
-  public RequestMapper(Jaxb2Marshaller jaxb2Marshaller, @Value("${mbd.service.id}") String mbdServiceId) {
-    this.jaxb2Marshaller = jaxb2Marshaller;
+  public RequestMapper(
+      SoapEnvelopeSerializer soapEnvelopeSerializer,
+      @Value("${mbd.service.id}") String mbdServiceId) {
+    this.soapEnvelopeSerializer = soapEnvelopeSerializer;
     this.mbdServiceId = mbdServiceId;
-
   }
 
   public DemandPaymentNoticeRequest mapDemandPaymentNoticeRequest(
@@ -80,7 +75,7 @@ public class RequestMapper {
     marcaDaBollo.setProvince(paymentNotice.getProvince());
     marcaDaBollo.setDocumentHash(paymentNotice.getDocumentHash().getBytes(StandardCharsets.UTF_8));
 
-    String serviceDataXml = marshalMarcaDaBollo(marcaDaBollo);
+    String serviceDataXml = soapEnvelopeSerializer.marshalMarcaDaBollo(marcaDaBollo);
 
     DemandPaymentNoticeRequest demandRequest = new DemandPaymentNoticeRequest();
     demandRequest.setIdPSP(idPsp);
@@ -212,12 +207,5 @@ public class RequestMapper {
     BigDecimal amount = new BigDecimal(grandTotal);
     BigDecimal divider = new BigDecimal(100);
     return amount.divide(divider, 2, RoundingMode.UNNECESSARY);
-  }
-
-  private String marshalMarcaDaBollo(TipoMarcaDaBollo marcaDaBollo) {
-    JAXBElement<TipoMarcaDaBollo> element = objectFactory.createMarcaDaBollo(marcaDaBollo);
-    StringWriter writer = new StringWriter();
-    jaxb2Marshaller.marshal(element, new StreamResult(writer));
-    return writer.toString();
   }
 }

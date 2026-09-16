@@ -16,23 +16,15 @@ import it.gov.pagopa.pagopa_api.pa.pafornode.CtTransferPAReceiptV2;
 import it.gov.pagopa.pagopa_api.pa.pafornode.PaSendRTV2Request;
 import it.gov.pagopa.pagopa_api.xsd.common_types.v1_0.StOutcome;
 import jakarta.xml.bind.JAXBElement;
-import java.io.ByteArrayInputStream;
-import java.io.StringWriter;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import org.xmlsoap.schemas.soap.envelope.Body;
 import org.xmlsoap.schemas.soap.envelope.Envelope;
-import org.xmlsoap.schemas.soap.envelope.ObjectFactory;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -43,14 +35,16 @@ public class ReactiveClient {
 
   private final WebClient webClient;
   private final ClientDataConfig clientDataConfig;
-  private final Jaxb2Marshaller jaxb2Marshaller;
+  private final SoapEnvelopeSerializer soapEnvelopeSerializer;
 
   @Autowired
   public ReactiveClient(
-      WebClient webClient, ClientDataConfig clientDataConfig, Jaxb2Marshaller jaxb2Marshaller) {
+      WebClient webClient,
+      ClientDataConfig clientDataConfig,
+      SoapEnvelopeSerializer soapEnvelopeSerializer) {
     this.webClient = webClient;
     this.clientDataConfig = clientDataConfig;
-    this.jaxb2Marshaller = jaxb2Marshaller;
+    this.soapEnvelopeSerializer = soapEnvelopeSerializer;
   }
 
   /**
@@ -62,23 +56,7 @@ public class ReactiveClient {
    */
   public Mono<DemandPaymentNoticeResponse> demandPaymentNotice(DemandPaymentNoticeRequest request) {
 
-    it.gov.pagopa.pagopa_api.node.nodeforpsp.ObjectFactory nodeObjectFactory =
-        new it.gov.pagopa.pagopa_api.node.nodeforpsp.ObjectFactory();
-    JAXBElement<DemandPaymentNoticeRequest> jaxbRequest =
-        nodeObjectFactory.createDemandPaymentNoticeRequest(request);
-
-    Body body = new Body();
-    body.getAny().add(jaxbRequest);
-
-    Envelope envelope = new Envelope();
-    envelope.setBody(body);
-
-    ObjectFactory soapObjectFactory = new ObjectFactory();
-    JAXBElement<Envelope> jaxbEnvelope = soapObjectFactory.createEnvelope(envelope);
-
-    StringWriter writer = new StringWriter();
-    jaxb2Marshaller.marshal(jaxbEnvelope, new StreamResult(writer));
-    String requestBody = writer.toString();
+    String requestBody = soapEnvelopeSerializer.marshalDemandPaymentNoticeEnvelope(request);
 
     log.debug("Requesting demandPaymentNotice with body: {}", requestBody);
     return webClient
@@ -90,7 +68,11 @@ public class ReactiveClient {
         .bodyValue(requestBody)
         .retrieve()
         .bodyToMono(String.class)
-        .map(this::unmarshalEnvelope)
+        .map(
+            xml -> {
+              log.debug("Received demandPaymentNotice response: {}", xml);
+              return soapEnvelopeSerializer.unmarshalEnvelope(xml);
+            })
         .map(this::extractDemandPaymentNoticeResponse)
         .onErrorMap(DemandPaymentNoticeKOException.class, e -> e)
         .onErrorMap(e -> new WebClientException(e.getMessage(), e));
@@ -168,17 +150,6 @@ public class ReactiveClient {
         .onErrorMap(IllegalArgumentException.class, e -> e)
         .onErrorMap(
             WebClientResponseException.class, e -> new WebClientException(e.getMessage(), e));
-  }
-
-  private Envelope unmarshalEnvelope(String xml) {
-    log.debug("Received demandPaymentNotice response: {}", xml);
-    Object unmarshalled =
-        jaxb2Marshaller.unmarshal(
-            new StreamSource(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8))));
-    if (unmarshalled instanceof JAXBElement<?> jaxbElement) {
-      unmarshalled = jaxbElement.getValue();
-    }
-    return (Envelope) unmarshalled;
   }
 
   private DemandPaymentNoticeResponse extractDemandPaymentNoticeResponse(Envelope envelope) {
