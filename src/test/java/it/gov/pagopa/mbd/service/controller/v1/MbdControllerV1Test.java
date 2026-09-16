@@ -163,7 +163,7 @@ class MbdControllerV1Test {
         .thenAnswer(item -> Mono.just(GetMdbReceipt.builder().content(MBD_BYTES).build()));
     webClient
         .get()
-        .uri("/v1/organizations/test/receipts/30000000001")
+        .uri("/v1/organizations/test/receipt/30000000001")
         .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
         .exchange()
         .expectStatus()

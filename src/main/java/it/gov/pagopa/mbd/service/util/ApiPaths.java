@@ -20,7 +20,7 @@ public final class ApiPaths {
 
   /** Path (relative to {@link #V1_BASE}) of the v1 Marca da Bollo receipt download endpoint. */
   public static final String V1_MBD_RECEIPT =
-      "/organizations/{organization-fiscal-code}/receipts/{nav}";
+      "/organizations/{organization-fiscal-code}/receipt/{nav}";
 
   /** Path (relative to {@link #V2_BASE}) of the v2 Marca da Bollo receipt download endpoint. */
   public static final String V2_MBD_RECEIPT =

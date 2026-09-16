@@ -150,7 +150,7 @@
         ]
       }
     },
-    "/organizations/{organization-fiscal-code}/receipts/{nav}": {
+    "/organizations/{organization-fiscal-code}/receipt/{nav}": {
       "get": {
         "deprecated": true,
         "description": "Return the Marca da Bollo Digitale",
