@@ -4,10 +4,9 @@ import it.gov.pagopa.mbd.service.exception.AppError;
 import it.gov.pagopa.mbd.service.model.ProblemJson;
 import it.gov.pagopa.mbd.service.util.CommonUtility;
 import jakarta.annotation.PostConstruct;
-// import jakarta.servlet.http.HttpServletRequest;
-// import jakarta.servlet.http.HttpServletResponse;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
@@ -38,10 +37,6 @@ public class LoggingAspect {
   public static final String OPERATION_ID = "operationId";
   public static final String ARGS = "args";
 
-  //  @Autowired HttpServletRequest httRequest;
-  //
-  //  @Autowired HttpServletResponse httpResponse;
-
   @Value("${info.application.name}")
   private String name;
 
@@ -52,15 +47,17 @@ public class LoggingAspect {
   private String environment;
 
   private static String getDetail(ResponseEntity<ProblemJson> result) {
-    if (result != null && result.getBody() != null && result.getBody().getDetail() != null) {
-      return result.getBody().getDetail();
-    } else return AppError.UNKNOWN.getDetails();
+    return Optional.ofNullable(result)
+        .map(ResponseEntity::getBody)
+        .map(ProblemJson::getDetail)
+        .orElseGet(AppError.UNKNOWN::getDetails);
   }
 
   private static String getTitle(ResponseEntity<ProblemJson> result) {
-    if (result != null && result.getBody() != null && result.getBody().getTitle() != null) {
-      return result.getBody().getTitle();
-    } else return AppError.UNKNOWN.getTitle();
+    return Optional.ofNullable(result)
+        .map(ResponseEntity::getBody)
+        .map(ProblemJson::getTitle)
+        .orElseGet(AppError.UNKNOWN::getTitle);
   }
 
   public static String getExecutionTime() {
@@ -134,7 +131,7 @@ public class LoggingAspect {
   @AfterReturning(value = "execution(* *..exception.ErrorHandler.*(..))", returning = "result")
   public void trowingApiInvocation(JoinPoint joinPoint, ResponseEntity<ProblemJson> result) {
     MDC.put(STATUS, "KO");
-    MDC.put(CODE, String.valueOf(result.getStatusCodeValue()));
+    MDC.put(CODE, String.valueOf(result.getStatusCode().value()));
     MDC.put(RESPONSE_TIME, getExecutionTime());
     MDC.put(FAULT_CODE, getTitle(result));
     MDC.put(FAULT_DETAIL, getDetail(result));
@@ -144,7 +141,7 @@ public class LoggingAspect {
 
   @Around(value = "repository() || service()")
   public Object logTrace(ProceedingJoinPoint joinPoint) throws Throwable {
-//    Map<String, String> params = getParams(joinPoint);
+    //    Map<String, String> params = getParams(joinPoint);
     log.debug("Call method {}", joinPoint.getSignature().toShortString());
     Object result = joinPoint.proceed();
     log.debug("Return method {} - result: {}", joinPoint.getSignature().toShortString(), result);
