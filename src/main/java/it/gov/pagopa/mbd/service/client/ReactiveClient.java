@@ -56,25 +56,28 @@ public class ReactiveClient {
    */
   public Mono<DemandPaymentNoticeResponse> demandPaymentNotice(DemandPaymentNoticeRequest request) {
 
-    String requestBody = soapEnvelopeSerializer.marshalDemandPaymentNoticeEnvelope(request);
-
-    log.debug("Requesting demandPaymentNotice with body: {}", requestBody);
-    return webClient
-        .post()
-        .uri(clientDataConfig.getDemandPaymentEndpoint())
-        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE)
-        .header("soapaction", "demandPaymentNotice")
-        .header(OCP_SUBSCRIPTION_KEY, clientDataConfig.getDemandPaymentSubscriptionKey())
-        .bodyValue(requestBody)
-        .retrieve()
-        .bodyToMono(String.class)
+    return Mono.fromCallable(
+            () -> soapEnvelopeSerializer.marshalDemandPaymentNoticeEnvelope(request))
+        .doOnNext(
+            requestBody -> log.debug("Requesting demandPaymentNotice with body: {}", requestBody))
+        .flatMap(
+            requestBody ->
+                webClient
+                    .post()
+                    .uri(clientDataConfig.getDemandPaymentEndpoint())
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_XML_VALUE)
+                    .header("soapaction", "demandPaymentNotice")
+                    .header(
+                        OCP_SUBSCRIPTION_KEY, clientDataConfig.getDemandPaymentSubscriptionKey())
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class))
         .map(
             xml -> {
               log.debug("Received demandPaymentNotice response: {}", xml);
               return soapEnvelopeSerializer.unmarshalEnvelope(xml);
             })
         .map(this::extractDemandPaymentNoticeResponse)
-        .onErrorMap(DemandPaymentNoticeKOException.class, e -> e)
         .onErrorMap(e -> new WebClientException(e.getMessage(), e));
   }
 
