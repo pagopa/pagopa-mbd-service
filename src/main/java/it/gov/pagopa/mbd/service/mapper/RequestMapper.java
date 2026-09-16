@@ -34,6 +34,13 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+/**
+ * Maps application-level DTOs (v1/v2 Marca da Bollo requests and Nodo/Checkout responses) into the
+ * JAXB-generated payloads used to interact with the Nodo {@code demandPaymentNotice} SOAP API and
+ * with the Checkout {@code /cart} endpoint. PSP identifiers and the {@code idSoggettoServizio} are
+ * injected from configuration, while the {@code datiSpecificiServizio} SOAP field is populated by
+ * delegating the {@link TipoMarcaDaBollo} marshalling to {@link SoapEnvelopeSerializer}.
+ */
 @Component
 public class RequestMapper {
 
@@ -56,6 +63,17 @@ public class RequestMapper {
     this.mbdServiceId = mbdServiceId;
   }
 
+  /**
+   * Builds the {@link DemandPaymentNoticeRequest} payload for the Nodo {@code demandPaymentNotice}
+   * SOAP operation, starting from the incoming application-level {@link GetMbdRequestV2}. Populates
+   * PSP identifiers from configuration and marshals the {@link TipoMarcaDaBollo} service data into
+   * the {@code datiSpecificiServizio} field.
+   *
+   * @param organizationFiscalCode fiscal code of the creditor organization (PA)
+   * @param getMdbRequest incoming Marca da Bollo request in its V2 shape
+   * @return the JAXB-typed {@link DemandPaymentNoticeRequest} ready to be sent to the Nodo
+   * @throws org.springframework.oxm.XmlMappingException if the service data cannot be marshalled
+   */
   public DemandPaymentNoticeRequest mapDemandPaymentNoticeRequest(
       String organizationFiscalCode, GetMbdRequestV2 getMdbRequest) {
 
@@ -92,6 +110,16 @@ public class RequestMapper {
     return demandRequest;
   }
 
+  /**
+   * Builds the Checkout v1 {@link GetCartRequest} starting from the original {@link GetMbdRequest}
+   * and the response received from the Nodo {@code demandPaymentNotice} call. Ensures that all
+   * mandatory fields (payment options, QR code) are present in the response.
+   *
+   * @param request original Marca da Bollo request (v1)
+   * @param demandPaymentNoticeResponse response returned by the Nodo
+   * @return the {@link GetCartRequest} to be sent to Checkout
+   * @throws CartMappingException if the response is missing required fields or the mapping fails
+   */
   public GetCartRequest mapCartRequest(
       GetMbdRequest request, DemandPaymentNoticeResponse demandPaymentNoticeResponse) {
     try {
@@ -127,6 +155,16 @@ public class RequestMapper {
     }
   }
 
+  /**
+   * Builds the Checkout v2 {@link GetCartRequestV2} starting from the {@link GetMbdRequestV2} and
+   * the response received from the Nodo {@code demandPaymentNotice} call. Ensures that all
+   * mandatory fields (payment options, QR code) are present in the response.
+   *
+   * @param request original Marca da Bollo request (v2)
+   * @param demandPaymentNoticeResponse response returned by the Nodo
+   * @return the {@link GetCartRequestV2} to be sent to Checkout
+   * @throws CartMappingException if the response is missing required fields or the mapping fails
+   */
   public GetCartRequestV2 mapCartV2Request(
       GetMbdRequestV2 request, DemandPaymentNoticeResponse demandPaymentNoticeResponse) {
     try {
@@ -164,6 +202,14 @@ public class RequestMapper {
     }
   }
 
+  /**
+   * Adapts a v1 {@link GetMbdRequest} to the v2 shape ({@link GetMbdRequestV2}), so the internal
+   * pipeline can operate on a single model. Extracts debtor identity from first/last name and
+   * fiscal code and detects whether it is a natural person or a legal entity.
+   *
+   * @param request v1 Marca da Bollo request
+   * @return the equivalent v2 representation
+   */
   public GetMbdRequestV2 mapGetMbdRequestToGetMbdRequestV2(GetMbdRequest request) {
     return GetMbdRequestV2.builder()
         .paymentNotices(
@@ -186,6 +232,10 @@ public class RequestMapper {
         .build();
   }
 
+  /**
+   * Builds a {@link Debtor} from a v1 {@link PaymentNotice}, composing the full name and inferring
+   * the {@link UniqueIdentifier} type (natural person vs. legal entity) from the fiscal code.
+   */
   private Debtor buildDebtor(PaymentNotice paymentNotice) {
     return Debtor.builder()
         .fullName(paymentNotice.getFirstName() + " " + paymentNotice.getLastName())
@@ -198,6 +248,12 @@ public class RequestMapper {
         .build();
   }
 
+  /**
+   * Detects whether the given identifier is an Italian natural-person fiscal code ({@code F}) or a
+   * legal-entity VAT number ({@code G}), based on the patterns declared in {@link Constants}.
+   *
+   * @throws IllegalArgumentException if the value matches neither pattern
+   */
   private UniqueIdentifier.UniqueIdentifierType extractUniqueIdentifierType(String fiscalCode) {
     if (Constants.FISCAL_CODE_PATTERN.matcher(fiscalCode).matches()) {
       return UniqueIdentifier.UniqueIdentifierType.F;
@@ -208,6 +264,11 @@ public class RequestMapper {
     }
   }
 
+  /**
+   * Converts an amount expressed in euro cents (long) into a {@link BigDecimal} with 2 decimal
+   * digits (euro). Uses {@link RoundingMode#UNNECESSARY}: the conversion is exact by construction
+   * (division by 100), so any rounding would signal a programming error.
+   */
   private BigDecimal formatEuroCentAmount(long grandTotal) {
     BigDecimal amount = new BigDecimal(grandTotal);
     BigDecimal divider = new BigDecimal(100);
