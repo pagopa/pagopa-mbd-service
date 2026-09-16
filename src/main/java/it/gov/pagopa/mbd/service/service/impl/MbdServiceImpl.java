@@ -30,7 +30,7 @@ public class MbdServiceImpl implements MbdService {
 
   private static final String DEMAND_PAYMENT_NOTICE_RESPONSE_KEY = "demandPaymentNoticeResponse";
   private static final String GET_MBD_V1_PATH = "%s/v1/organizations/%s/receipts/%s";
-  private static final String GET_MBD_V2_PATH = "%s/v2/organizations/%s/noticeNumber/%s/mbd";
+  private static final String GET_MBD_V2_PATH = "%s/v2/organizations/%s/noticeNumbers/%s/mbd";
 
   private final Validator validator;
   private final ReactiveClient reactiveSoapClient;
