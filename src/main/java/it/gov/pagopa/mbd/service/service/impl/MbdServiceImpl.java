@@ -36,26 +36,17 @@ public class MbdServiceImpl implements MbdService {
   private final ReactiveClient reactiveSoapClient;
   private final RequestMapper requestMapper;
   private final String mdbLinkBaseUrl;
-  private final String idPsp;
-  private final String idBrokerPsp;
-  private final String channelId;
 
   @Autowired
   public MbdServiceImpl(
       Validator validator,
       ReactiveClient reactiveSoapClient,
       RequestMapper requestMapper,
-      @Value("${mbd.link.baseUrl}") String mdbLinkBaseUrl,
-      @Value("${mbd.mapper.idPsp}") String idPsp,
-      @Value("${mbd.mapper.idBrokerPsp}") String idBrokerPsp,
-      @Value("${mbd.mapper.channelId}") String channelId) {
+      @Value("${mbd.link.baseUrl}") String mdbLinkBaseUrl) {
     this.validator = validator;
     this.reactiveSoapClient = reactiveSoapClient;
     this.requestMapper = requestMapper;
     this.mdbLinkBaseUrl = mdbLinkBaseUrl;
-    this.idPsp = idPsp;
-    this.idBrokerPsp = idBrokerPsp;
-    this.channelId = channelId;
   }
 
   /** {@inheritDoc} */
@@ -82,7 +73,7 @@ public class MbdServiceImpl implements MbdService {
               GetMbdRequestV2 getMbdRequestV2 =
                   requestMapper.mapGetMbdRequestToGetMbdRequestV2(item);
               return requestMapper.mapDemandPaymentNoticeRequest(
-                  idPsp, idBrokerPsp, channelId, organizationFiscalCode, getMbdRequestV2);
+                  organizationFiscalCode, getMbdRequestV2);
             })
         .onErrorMap(
             XmlMappingException.class,
@@ -149,10 +140,7 @@ public class MbdServiceImpl implements MbdService {
                   "Encountered an error during demandPaymentNotice Validation: {}", e.getMessage());
               return e;
             })
-        .map(
-            item ->
-                requestMapper.mapDemandPaymentNoticeRequest(
-                    idPsp, idBrokerPsp, channelId, organizationFiscalCode, item))
+        .map(item -> requestMapper.mapDemandPaymentNoticeRequest(organizationFiscalCode, item))
         .onErrorMap(
             XmlMappingException.class,
             e -> {

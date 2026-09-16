@@ -38,21 +38,26 @@ import org.springframework.stereotype.Component;
 public class RequestMapper {
 
   private final SoapEnvelopeSerializer soapEnvelopeSerializer;
+  private final String idPsp;
+  private final String idBrokerPsp;
+  private final String channelId;
   private final String mbdServiceId;
 
   public RequestMapper(
       SoapEnvelopeSerializer soapEnvelopeSerializer,
+      @Value("${mbd.mapper.idPsp}") String idPsp,
+      @Value("${mbd.mapper.idBrokerPsp}") String idBrokerPsp,
+      @Value("${mbd.mapper.channelId}") String channelId,
       @Value("${mbd.service.id}") String mbdServiceId) {
     this.soapEnvelopeSerializer = soapEnvelopeSerializer;
+    this.idPsp = idPsp;
+    this.idBrokerPsp = idBrokerPsp;
+    this.channelId = channelId;
     this.mbdServiceId = mbdServiceId;
   }
 
   public DemandPaymentNoticeRequest mapDemandPaymentNoticeRequest(
-      String idPsp,
-      String idBrokerPsp,
-      String idChannel,
-      String organizationFiscalCode,
-      GetMbdRequestV2 getMdbRequest) {
+      String organizationFiscalCode, GetMbdRequestV2 getMdbRequest) {
 
     PaymentNoticeV2 paymentNotice = getMdbRequest.getPaymentNotices().get(0);
     Debtor debtor = paymentNotice.getDebtor();
@@ -80,7 +85,7 @@ public class RequestMapper {
     DemandPaymentNoticeRequest demandRequest = new DemandPaymentNoticeRequest();
     demandRequest.setIdPSP(idPsp);
     demandRequest.setIdBrokerPSP(idBrokerPsp);
-    demandRequest.setIdChannel(idChannel);
+    demandRequest.setIdChannel(channelId);
     demandRequest.setIdSoggettoServizio(mbdServiceId);
     demandRequest.setPassword("PLACEHOLDER");
     demandRequest.setDatiSpecificiServizio(serviceDataXml.getBytes(StandardCharsets.UTF_8));
