@@ -18,6 +18,7 @@ import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
 import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
 import it.gov.pagopa.mbd.service.service.MbdService;
+import it.gov.pagopa.mbd.service.util.ApiPaths;
 import it.gov.pagopa.mbd.service.util.OpenAPIDocumentationConstants;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,7 +31,7 @@ import reactor.core.publisher.Mono;
 
 @Tag(name = "MBD - v1", description = "APIs for @eBollo v1")
 @RestController
-@RequestMapping("/v1")
+@RequestMapping(ApiPaths.V1_BASE)
 public class MbdControllerV1 {
 
   private final MbdService mdbService;
@@ -100,9 +101,7 @@ public class MbdControllerV1 {
                     mediaType = MediaType.APPLICATION_JSON_VALUE,
                     schema = @Schema(implementation = GetCartErrorResponse.class)))
       })
-  @PostMapping(
-      value = "/organizations/{organization-fiscal-code}/mbd",
-      produces = MediaType.APPLICATION_JSON_VALUE)
+  @PostMapping(value = ApiPaths.MBD_POST, produces = MediaType.APPLICATION_JSON_VALUE)
   @Deprecated(forRemoval = true)
   public Mono<ResponseEntity<?>> getMdb(
       @PathVariable("organization-fiscal-code") @Parameter(description = "Organization fiscal code")
@@ -199,9 +198,7 @@ public class MbdControllerV1 {
                                 OpenAPIDocumentationConstants
                                     .OPENAPI_INTERNAL_SERVER_ERROR_EXAMPLE))),
       })
-  @GetMapping(
-      value = "/organizations/{organization-fiscal-code}/receipt/{nav}",
-      produces = MediaType.APPLICATION_JSON_VALUE)
+  @GetMapping(value = ApiPaths.V1_MBD_RECEIPT, produces = MediaType.APPLICATION_JSON_VALUE)
   @Deprecated(forRemoval = true)
   public Mono<ResponseEntity<GetMdbReceipt>> getPaymentReceipts(
       @PathVariable("organization-fiscal-code") @Parameter(description = "Organization fiscal code")

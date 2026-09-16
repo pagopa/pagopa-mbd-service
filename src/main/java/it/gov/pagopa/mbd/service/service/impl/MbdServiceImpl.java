@@ -11,17 +11,20 @@ import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
 import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
 import it.gov.pagopa.mbd.service.service.MbdService;
+import it.gov.pagopa.mbd.service.util.ApiPaths;
 import it.gov.pagopa.pagopa_api.node.nodeforpsp.DemandPaymentNoticeResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.oxm.XmlMappingException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -29,8 +32,6 @@ import reactor.core.publisher.Mono;
 public class MbdServiceImpl implements MbdService {
 
   private static final String DEMAND_PAYMENT_NOTICE_RESPONSE_KEY = "demandPaymentNoticeResponse";
-  private static final String GET_MBD_V1_PATH = "%s/v1/organizations/%s/receipts/%s";
-  private static final String GET_MBD_V2_PATH = "%s/v2/organizations/%s/noticeNumbers/%s/mbd";
 
   private final Validator validator;
   private final ReactiveClient reactiveSoapClient;
@@ -114,8 +115,10 @@ public class MbdServiceImpl implements MbdService {
                   hashMap.get(DEMAND_PAYMENT_NOTICE_RESPONSE_KEY).getQrCode().getNoticeNumber();
               item.setNav(noticeNumber);
               String mbdDownloadLink =
-                  String.format(
-                      GET_MBD_V1_PATH, mdbLinkBaseUrl, organizationFiscalCode, noticeNumber);
+                  buildMbdDownloadLink(
+                      ApiPaths.V1_BASE + ApiPaths.V1_MBD_RECEIPT,
+                      organizationFiscalCode,
+                      noticeNumber);
               item.setMbdDownloadLink(mbdDownloadLink);
               return item;
             });
@@ -180,8 +183,10 @@ public class MbdServiceImpl implements MbdService {
                   hashMap.get(DEMAND_PAYMENT_NOTICE_RESPONSE_KEY).getQrCode().getNoticeNumber();
               item.setNav(noticeNumber);
               String mbdDownloadLink =
-                  String.format(
-                      GET_MBD_V2_PATH, mdbLinkBaseUrl, organizationFiscalCode, noticeNumber);
+                  buildMbdDownloadLink(
+                      ApiPaths.V2_BASE + ApiPaths.V2_MBD_RECEIPT,
+                      organizationFiscalCode,
+                      noticeNumber);
               item.setMbdDownloadLink(mbdDownloadLink);
               return item;
             });
@@ -206,5 +211,21 @@ public class MbdServiceImpl implements MbdService {
               return new AppException(AppError.PAYMENT_RECEIPTS_CALL_ERROR, e);
             })
         .map(item -> GetMdbReceipt.builder().content(item).build());
+  }
+
+  /**
+   * Builds the absolute Marca da Bollo download URL by concatenating the configured base URL with
+   * the given API path template (using the same {@code {name}} placeholders declared in the
+   * controllers) and expanding the {@code organization-fiscal-code} / {@code nav} variables.
+   */
+  private String buildMbdDownloadLink(
+      String pathTemplate, String organizationFiscalCode, String noticeNumber) {
+    return UriComponentsBuilder.fromUriString(mdbLinkBaseUrl)
+        .path(pathTemplate)
+        .buildAndExpand(
+            Map.of(
+                "organization-fiscal-code", organizationFiscalCode,
+                "nav", noticeNumber))
+        .toUriString();
   }
 }
