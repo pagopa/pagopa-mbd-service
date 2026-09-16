@@ -144,8 +144,8 @@ public class LoggingAspect {
 
   @Around(value = "repository() || service()")
   public Object logTrace(ProceedingJoinPoint joinPoint) throws Throwable {
-    Map<String, String> params = getParams(joinPoint);
-    log.debug("Call method {} - args: {}", joinPoint.getSignature().toShortString(), params);
+//    Map<String, String> params = getParams(joinPoint);
+    log.debug("Call method {}", joinPoint.getSignature().toShortString());
     Object result = joinPoint.proceed();
     log.debug("Return method {} - result: {}", joinPoint.getSignature().toShortString(), result);
     return result;
