@@ -39,7 +39,6 @@ public class MbdServiceImpl implements MbdService {
   private final String idPsp;
   private final String idBrokerPsp;
   private final String channelId;
-  private final String mbdServiceId;
 
   @Autowired
   public MbdServiceImpl(
@@ -49,8 +48,7 @@ public class MbdServiceImpl implements MbdService {
       @Value("${mbd.link.baseUrl}") String mdbLinkBaseUrl,
       @Value("${mbd.mapper.idPsp}") String idPsp,
       @Value("${mbd.mapper.idBrokerPsp}") String idBrokerPsp,
-      @Value("${mbd.mapper.channelId}") String channelId,
-      @Value("${mbd.service.id}") String mbdServiceId) {
+      @Value("${mbd.mapper.channelId}") String channelId) {
     this.validator = validator;
     this.reactiveSoapClient = reactiveSoapClient;
     this.requestMapper = requestMapper;
@@ -58,7 +56,6 @@ public class MbdServiceImpl implements MbdService {
     this.idPsp = idPsp;
     this.idBrokerPsp = idBrokerPsp;
     this.channelId = channelId;
-    this.mbdServiceId = mbdServiceId;
   }
 
   /** {@inheritDoc} */
@@ -83,14 +80,9 @@ public class MbdServiceImpl implements MbdService {
         .map(
             item -> {
               GetMbdRequestV2 getMbdRequestV2 =
-                      requestMapper.mapGetMbdRequestToGetMbdRequestV2(item);
+                  requestMapper.mapGetMbdRequestToGetMbdRequestV2(item);
               return requestMapper.mapDemandPaymentNoticeRequest(
-                  idPsp,
-                  idBrokerPsp,
-                  channelId,
-                  mbdServiceId,
-                  organizationFiscalCode,
-                  getMbdRequestV2);
+                  idPsp, idBrokerPsp, channelId, organizationFiscalCode, getMbdRequestV2);
             })
         .onErrorMap(
             XmlMappingException.class,
@@ -160,7 +152,7 @@ public class MbdServiceImpl implements MbdService {
         .map(
             item ->
                 requestMapper.mapDemandPaymentNoticeRequest(
-                    idPsp, idBrokerPsp, channelId, mbdServiceId, organizationFiscalCode, item))
+                    idPsp, idBrokerPsp, channelId, organizationFiscalCode, item))
         .onErrorMap(
             XmlMappingException.class,
             e -> {

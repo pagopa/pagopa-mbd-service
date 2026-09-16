@@ -34,6 +34,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import javax.xml.transform.stream.StreamResult;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
 
@@ -43,16 +44,18 @@ public class RequestMapper {
   private static final ObjectFactory objectFactory = new ObjectFactory();
 
   private final Jaxb2Marshaller jaxb2Marshaller;
+  private final String mbdServiceId;
 
-  public RequestMapper(Jaxb2Marshaller jaxb2Marshaller) {
+  public RequestMapper(Jaxb2Marshaller jaxb2Marshaller, @Value("${mbd.service.id}") String mbdServiceId) {
     this.jaxb2Marshaller = jaxb2Marshaller;
+    this.mbdServiceId = mbdServiceId;
+
   }
 
   public DemandPaymentNoticeRequest mapDemandPaymentNoticeRequest(
       String idPsp,
       String idBrokerPsp,
       String idChannel,
-      String mbdServiceId,
       String organizationFiscalCode,
       GetMbdRequestV2 getMdbRequest) {
 
