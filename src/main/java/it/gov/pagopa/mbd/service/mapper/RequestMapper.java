@@ -31,7 +31,6 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import javax.xml.transform.stream.StreamResult;
@@ -86,8 +85,7 @@ public class RequestMapper {
     demandRequest.setIdChannel(idChannel);
     demandRequest.setIdSoggettoServizio(mbdServiceId);
     demandRequest.setPassword("PLACEHOLDER");
-    demandRequest.setDatiSpecificiServizio(
-        Base64.getMimeEncoder().encode(serviceDataXml.getBytes(StandardCharsets.UTF_8)));
+    demandRequest.setDatiSpecificiServizio(serviceDataXml.getBytes(StandardCharsets.UTF_8));
     return demandRequest;
   }
 

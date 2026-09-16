@@ -17,8 +17,10 @@ import it.gov.pagopa.pagopa_api.pa.pafornode.PaSendRTV2Request;
 import it.gov.pagopa.pagopa_api.xsd.common_types.v1_0.StOutcome;
 import jakarta.xml.bind.JAXBElement;
 import java.io.ByteArrayInputStream;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +30,9 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.xmlsoap.schemas.soap.envelope.Body;
 import org.xmlsoap.schemas.soap.envelope.Envelope;
+import org.xmlsoap.schemas.soap.envelope.ObjectFactory;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -36,23 +40,6 @@ import reactor.core.publisher.Mono;
 public class ReactiveClient {
 
   private static final String OCP_SUBSCRIPTION_KEY = "ocp-apim-subscription-key";
-  private static final String DEMAND_PAYMENT_BODY =
-      """
-    <?xml version="1.0" encoding="utf-8"?>
-      <Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
-        <Body>
-          <demandPaymentNoticeRequest
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xmlns="http://pagopa-api.pagopa.gov.it/node/nodeForPsp.xsd">
-            <idPSP xmlns="">%s</idPSP>
-            <idBrokerPSP xmlns="">%s</idBrokerPSP>
-            <idChannel xmlns="">%s</idChannel>
-            <password xmlns="">%s</password>
-            <idSoggettoServizio xmlns="">%s</idSoggettoServizio>
-            <datiSpecificiServizio xmlns="">%s</datiSpecificiServizio>
-          </demandPaymentNoticeRequest>
-        </Body>
-      </Envelope>""";
 
   private final WebClient webClient;
   private final ClientDataConfig clientDataConfig;
@@ -75,15 +62,23 @@ public class ReactiveClient {
    */
   public Mono<DemandPaymentNoticeResponse> demandPaymentNotice(DemandPaymentNoticeRequest request) {
 
-    String requestBody =
-        String.format(
-            DEMAND_PAYMENT_BODY,
-            request.getIdPSP(),
-            request.getIdBrokerPSP(),
-            request.getIdChannel(),
-            request.getPassword(),
-            request.getIdSoggettoServizio(),
-            new String(request.getDatiSpecificiServizio(), StandardCharsets.UTF_8));
+    it.gov.pagopa.pagopa_api.node.nodeforpsp.ObjectFactory nodeObjectFactory =
+        new it.gov.pagopa.pagopa_api.node.nodeforpsp.ObjectFactory();
+    JAXBElement<DemandPaymentNoticeRequest> jaxbRequest =
+        nodeObjectFactory.createDemandPaymentNoticeRequest(request);
+
+    Body body = new Body();
+    body.getAny().add(jaxbRequest);
+
+    Envelope envelope = new Envelope();
+    envelope.setBody(body);
+
+    ObjectFactory soapObjectFactory = new ObjectFactory();
+    JAXBElement<Envelope> jaxbEnvelope = soapObjectFactory.createEnvelope(envelope);
+
+    StringWriter writer = new StringWriter();
+    jaxb2Marshaller.marshal(jaxbEnvelope, new StreamResult(writer));
+    String requestBody = writer.toString();
 
     log.debug("Requesting demandPaymentNotice with body: {}", requestBody);
     return webClient
