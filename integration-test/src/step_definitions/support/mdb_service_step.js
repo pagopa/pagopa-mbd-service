@@ -1,15 +1,41 @@
 const assert = require('assert');
-const {Given, When, Then, After, setDefaultTimeout} = require('@cucumber/cucumber');
+const {When, Then, Before, AfterAll, setDefaultTimeout} = require('@cucumber/cucumber');
 const {insertPaymentReceiptEntity, deletePaymentReceiptEntity} = require("./gpd_payment_receipt_table_client");
-const {insertDebtPosition, deleteDebtPosition} = require("./pg_gpd_client");
+const {insertDebtPosition, deleteDebtPosition, shutDownPool} = require("./pg_gpd_client");
 const {getMDBV1, getMDBV2, getMdbReceiptV1, getMdbReceiptV2} = require("./mbd_service_client.js");
 const {getMDBV1Body, getMDBV2Body} = require("./common");
 
 // set timeout for Hooks function, it allows to wait for long task
 setDefaultTimeout(15 * 1000);
 
-let fiscalCodeEC = process.env.FISCAL_CODE_EC;
+let organizationFiscalCode = process.env.ORGANIZATION_FISCAL_CODE;
 let iuv = process.env.IUV;
+
+// id of the payment_position created for the getMDBReceipt tests (needed for the final cleanup)
+let paymentPositionId = null;
+
+// Setup common to all getMDBReceipt scenarios: executed only once thanks to the guard.
+// Inserts the PAID debt position and its related receipt into the GPD table.
+Before({tags: "@getMDBReceipt"}, async function () {
+    if (paymentPositionId === null) {
+        const result = await insertDebtPosition({iuv, fiscalCode: organizationFiscalCode});
+        paymentPositionId = result.paymentPositionId;
+        await insertPaymentReceiptEntity(organizationFiscalCode, iuv);
+    }
+});
+
+// Final cleanup: after all tests, delete the debt position and the receipt created for the tests.
+AfterAll(async function () {
+    try {
+        if (paymentPositionId !== null) {
+            await deleteDebtPosition(paymentPositionId);
+            await deletePaymentReceiptEntity(organizationFiscalCode, iuv);
+        }
+    } finally {
+        // Close the pg connection pool, otherwise the test process stays hanging.
+        await shutDownPool();
+    }
+});
 
 
 When('an Http GET request is sent to the mdb-service getMDB V1 with {string}', async function (inputType) {
@@ -59,27 +85,18 @@ Then('response contains mdb nav', function () {
     this.correctNav = this.response?.data?.nav;
 });
 
-Given('a PAID debt position stored in GPD database nav {string}', async function (nav) {
-    await insertDebtPosition({iuv, fiscalCodeEC});
-
-});
-
-Given('a receipt stored in GPD payments table', async function () {
-    await insertPaymentReceiptEntity(fiscalCodeEC, iuv);
-
-});
 
 When('an Http GET request is sent to the mdb-service getMDBReceipt V1 with {string}', async function (dataType) {
 
     switch (dataType) {
         case "correct":
-            this.response = await getMdbReceiptV1(fiscalCodeEC, `3${iuv}`);
+            this.response = await getMdbReceiptV1(organizationFiscalCode, `3${iuv}`);
             break;
         case "wrong_ec":
             this.response = await getMdbReceiptV1("AAAAAAA", `3${iuv}`);
             break;
         case "wrong_nav":
-            this.response = await getMdbReceiptV1(fiscalCodeEC, "AAAAAAAA");
+            this.response = await getMdbReceiptV1(organizationFiscalCode, "AAAAAAAA");
             break;
     }
 });
@@ -88,13 +105,13 @@ When('an Http GET request is sent to the mdb-service getMDBReceipt V2 with {stri
 
     switch (dataType) {
         case "correct":
-            this.response = await getMdbReceiptV2(fiscalCodeEC, `3${iuv}`);
+            this.response = await getMdbReceiptV2(organizationFiscalCode, `3${iuv}`);
             break;
         case "wrong_ec":
             this.response = await getMdbReceiptV2("AAAAAAA", `3${iuv}`);
             break;
         case "wrong_nav":
-            this.response = await getMdbReceiptV2(fiscalCodeEC, "AAAAAAAA");
+            this.response = await getMdbReceiptV2(organizationFiscalCode, "AAAAAAAA");
             break;
     }
 });

@@ -1,4 +1,6 @@
-Feature: @e.Bollo 2.0 APIs
+Feature:
+
+  @e.Bollo 2.0 APIs
 
   Scenario: Execute a request to getMDB V1 API with invalid debtor fiscal code
     When an Http GET request is sent to the mdb-service getMDB V1 with "missing_fiscal_code"
@@ -30,29 +32,33 @@ Feature: @e.Bollo 2.0 APIs
     And response contains mdb link
     And response contains mdb nav
 
+  @getMDBReceipt
   Scenario: Execute a request to getMDB Receipt V1 API with valid content
-    Given a PAID debt position stored in GPD database nav 352178956907266666
-    And a receipt stored in GPD payments table
     When an Http GET request is sent to the mdb-service getMDBReceipt V1 with "correct"
     Then response has a 200 Http status
 
+  @getMDBReceipt
   Scenario: Execute a request to getMDBReceipt V1 API with wrong data
     When an Http GET request is sent to the mdb-service getMDBReceipt V2 with "wrong_ec"
     Then response has a 500 Http status
 
+  @getMDBReceipt
   Scenario: Execute a request to getMDBReceipt V1 API with wrong data
     When an Http GET request is sent to the mdb-service getMDBReceipt V1 with "wrong_nav"
     Then response has a 500 Http status
 
+  @getMDBReceipt
   Scenario: Execute a request to getMDB Receipt V2 API with valid content
-    Given a receipt of the former MDB payment being payed
     When an Http GET request is sent to the mdb-service getMDBReceipt V2 with "correct"
     Then response has a 200 Http status
 
+  @getMDBReceipt
   Scenario: Execute a request to getMDBReceipt V2 API with wrong data
     When an Http GET request is sent to the mdb-service getMDBReceipt V2 with "wrong_ec"
     Then response has a 500 Http status
 
+  @getMDBReceipt
   Scenario: Execute a request to getMDBReceipt V2 API with wrong data
     When an Http GET request is sent to the mdb-service getMDBReceipt V2 with "wrong_nav"
     Then response has a 500 Http status
+
