@@ -25,8 +25,9 @@ locals {
     "TENANT_ID" : data.azurerm_client_config.current.tenant_id,
     "SUBSCRIPTION_ID" : data.azurerm_subscription.current.subscription_id,
     "SUBKEY" : data.azurerm_key_vault_secret.key_vault_integration_test_subkey.value,
-    "GPD_SUBKEY" : var.env_short != "p" ? data.azurerm_key_vault_secret.key_vault_gpd_api_key[0].value : "-"
-
+    "PG_GPD_PASSWORD" : data.azurerm_key_vault_secret.key_vault_integration_test_gpd_db_apd_user_psw.value,
+    "PG_GPD_USERNAME" : data.azurerm_key_vault_secret.key_vault_integration_test_gpd_db_apd_user_name.value,
+    "GPD_PAYMENT_RECEIPT_TABLES_CONNECTION_STRING" : "DefaultEndpointsProtocol=https;AccountName=pagopa-${var.env_short}-weu-gps-payments-cosmos-account;AccountKey=${data.azurerm_cosmosdb_account.gps_payment_cosmos.primary_key};TableEndpoint=https://pagopa-${var.env_short}-weu-gps-payments-cosmos-account.table.cosmos.azure.com:443/;"
   }
   env_variables = {
     "CONTAINER_APP_ENVIRONMENT_NAME" : local.container_app_environment.name,
@@ -34,7 +35,7 @@ locals {
     "CLUSTER_NAME" : local.aks_cluster.name,
     "CLUSTER_RESOURCE_GROUP" : local.aks_cluster.resource_group_name,
     "NAMESPACE" : local.domain,
-    "WORKLOAD_IDENTITY_ID": data.azurerm_user_assigned_identity.workload_identity_clientid.client_id
+    "WORKLOAD_IDENTITY_ID" : data.azurerm_user_assigned_identity.workload_identity_clientid.client_id
   }
   repo_secrets = {
     "SONAR_TOKEN" : data.azurerm_key_vault_secret.key_vault_sonar.value,
@@ -51,10 +52,6 @@ locals {
     "SUBKEY" : {
       "key" : "${upper(var.env)}_SUBKEY",
       "value" : data.azurerm_key_vault_secret.key_vault_integration_test_subkey.value
-    },
-    "GPD_SUBKEY" : {
-      "key" : "${upper(var.env)}_GPD_SUBKEY",
-      "value" : var.env_short != "p" ? data.azurerm_key_vault_secret.key_vault_gpd_api_key[0].value : "-"
     },
   }
 }
