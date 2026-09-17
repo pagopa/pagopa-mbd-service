@@ -2,7 +2,7 @@
   "environment": [
     {
       "env": "dev",
-      "mbdServiceUri": "https://api.dev.platform.pagopa.it/pagopa-mbd-service/v1/organizations",
+      "mbdServiceUri": "https://api.dev.platform.pagopa.it/pagopa-mbd-service/v2/organizations",
       "fiscalCodeEC": "99999000013",
       "nav": "348173447377455101",
       "idCIService": "00005"

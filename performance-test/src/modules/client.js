@@ -7,20 +7,24 @@ export function getMBD(url, fiscalCode, idCIService) {
   var body = {
                 "paymentNotices": [
                     {
-                        "firstName": "Mario",
-                        "lastName": "Rossi",
-                        "fiscalCode": "77777777777",
-                        "amount": 16,
-                        "email": "test@pagopa.it",
-                        "province": "RM",
-                        "documentHash": "PHJvb3Q+PC9yb290Pg=========================="
+                        "amount": 1600,
+                        "debtor": {
+                            "email": "test@pagopa.it",
+                            "fullName": "Mario Rossi",
+                            "uniqueIdentifier": {
+                                "type": "F",
+                                "value": "JHNDOE00A01B157N"
+                            }
+                        },
+                        "documentHash": "stringstringstringstringstringstringstringst",
+                        "province": "RM"
                     }
                 ],
-                "idCIService": idCIService,
                 "returnUrls": {
-                    "successUrl": "https://url1.it",
                     "cancelUrl": "https://url2.it",
-                    "errorUrl": "https://url3.it"
+                    "errorUrl": "https://url3.it",
+                    "successUrl": "https://url1.it",
+                    "waitingUrl": "https://url4.it"
                 }
             };
 
