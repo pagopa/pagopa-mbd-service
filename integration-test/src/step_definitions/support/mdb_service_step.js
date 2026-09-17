@@ -1,34 +1,15 @@
 const assert = require('assert');
 const {Given, When, Then, After, setDefaultTimeout} = require('@cucumber/cucumber');
-const {getBody, getPayPosition, payReceipt, getDebtPositions, deleteDebtPosition} = require("./common.js");
+const {insertPaymentReceiptEntity, deletePaymentReceiptEntity} = require("./gpd_payment_receipt_table_client");
+const {insertDebtPosition, deleteDebtPosition} = require("./pg_gpd_client");
 const {getMDBV1, getMDBV2, getMdbReceiptV1, getMdbReceiptV2} = require("./mbd_service_client.js");
 const {getMDBV1Body, getMDBV2Body} = require("./common");
 
 // set timeout for Hooks function, it allows to wait for long task
 setDefaultTimeout(15 * 1000);
 
-var fiscalCodeEC = process.env.FISCAL_CODE_EC;
-var receiptNav = process.env.CORRECT_NAV;
-
-// After each Scenario
-// After(async function () {
-//
-//     this.response = null;
-//
-//     if (this.payResponse != null) {
-//         var responseDebtPosition = await getDebtPositions(fiscalCodeEC, this.dueDate.split('T')[0]);
-//
-//         for (let element of responseDebtPosition?.payment_position_list) {
-//             if (element.paymentOption[0].nav === this.correctNav) {
-//                 await deleteDebtPosition(fiscalCodeEC, element.iupd);
-//             }
-//         }
-//         ;
-//         this.correctNav = null;
-//         this.payResponse = null;
-//     }
-//
-// });
+let fiscalCodeEC = process.env.FISCAL_CODE_EC;
+let iuv = process.env.IUV;
 
 
 When('an Http GET request is sent to the mdb-service getMDB V1 with {string}', async function (inputType) {
@@ -78,37 +59,44 @@ Then('response contains mdb nav', function () {
     this.correctNav = this.response?.data?.nav;
 });
 
-Given('a receipt of the former MDB payment being payed', async function () {
-
-    this.payResponse = await getPayPosition(fiscalCodeEC, receiptNav);
-    assert.notEqual(this.payResponse, null);
-    this.dueDate = this.payResponse?.data?.dueDate;
-//    var payBody = {
-//      "paymentDate": this.response?.data?.insertedDate,
-//      "paymentMethod": this.response?.data?.paymentMethod,
-//      "pspCompany": this.response?.data?.pspCompany
-//      "idReceipt": this.response?.data?.idReceipt,
-//      "fee": this.response?.data?.fee
-//    }
-//    await payReceipt();
+Given('a PAID debt position stored in GPD database nav {string}', async function (nav) {
+    await insertDebtPosition({iuv, fiscalCodeEC});
 
 });
 
-When('an Http GET request is sent to the mdb-service getMDBReceipt with {string}', async function (dataType) {
+Given('a receipt stored in GPD payments table', async function () {
+    await insertPaymentReceiptEntity(fiscalCodeEC, iuv);
+
+});
+
+When('an Http GET request is sent to the mdb-service getMDBReceipt V1 with {string}', async function (dataType) {
 
     switch (dataType) {
         case "correct":
-            this.response = await getMdbReceipt(fiscalCodeEC, receiptNav);
+            this.response = await getMdbReceiptV1(fiscalCodeEC, `3${iuv}`);
             break;
         case "wrong_ec":
-            this.response = await getMdbReceipt("AAAAAAA", receiptNav);
+            this.response = await getMdbReceiptV1("AAAAAAA", `3${iuv}`);
             break;
         case "wrong_nav":
-            this.response = await getMdbReceipt(fiscalCodeEC, "AAAAAAAA");
+            this.response = await getMdbReceiptV1(fiscalCodeEC, "AAAAAAAA");
             break;
-
     }
+});
 
+When('an Http GET request is sent to the mdb-service getMDBReceipt V2 with {string}', async function (dataType) {
+
+    switch (dataType) {
+        case "correct":
+            this.response = await getMdbReceiptV2(fiscalCodeEC, `3${iuv}`);
+            break;
+        case "wrong_ec":
+            this.response = await getMdbReceiptV2("AAAAAAA", `3${iuv}`);
+            break;
+        case "wrong_nav":
+            this.response = await getMdbReceiptV2(fiscalCodeEC, "AAAAAAAA");
+            break;
+    }
 });
 
 Then('response body contains content data', function () {
