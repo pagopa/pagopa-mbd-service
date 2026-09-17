@@ -207,15 +207,18 @@ public class MbdServiceImpl implements MbdService {
         .onErrorMap(
             WebClientResponseException.class,
             e -> {
-              String problemJsonDetail = getProblemJsonDetail(e);
+              int status = e.getStatusCode().value();
+              String detail = hasProblemJsonBody(status) ? getProblemJsonDetail(e) : e.getMessage();
               log.error(
-                  "Encountered an error during getPaymentReceiptCall Call: {}", problemJsonDetail);
+                  "Encountered an error during getPaymentReceipt call: status={}, detail={}",
+                  status,
+                  detail);
 
-              if (e.getStatusCode().value() == 404) {
+              if (status == 404) {
                 return new AppException(
                     AppError.PAYMENT_RECEIPTS_NOT_FOUND, e, organizationFiscalCode, nav);
               }
-              return new AppException(AppError.PAYMENT_RECEIPTS_CALL_ERROR, e, problemJsonDetail);
+              return new AppException(AppError.PAYMENT_RECEIPTS_CALL_ERROR, e, detail);
             })
         .onErrorMap(
             IllegalArgumentException.class,
@@ -241,6 +244,10 @@ public class MbdServiceImpl implements MbdService {
                 "organization-fiscal-code", organizationFiscalCode,
                 "nav", noticeNumber))
         .toUriString();
+  }
+
+  private boolean hasProblemJsonBody(int status) {
+    return status == 404 || status == 422 || status == 500;
   }
 
   private String getProblemJsonDetail(WebClientResponseException e) {
