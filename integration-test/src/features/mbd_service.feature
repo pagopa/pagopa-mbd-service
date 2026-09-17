@@ -1,6 +1,4 @@
-Feature:
-
-  @e.Bollo 2.0 APIs
+Feature: e.Bollo 2.0 APIs
 
   Scenario: Execute a request to getMDB V1 API with invalid debtor fiscal code
     When an Http GET request is sent to the mdb-service getMDB V1 with "missing_fiscal_code"
