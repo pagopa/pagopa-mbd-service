@@ -8,9 +8,9 @@ import org.springframework.validation.annotation.Validated;
 @EqualsAndHashCode(callSuper = true)
 @Value
 @Validated
-public class CartMappingException extends RuntimeException {
+public class CartRequestMappingException extends RuntimeException {
 
-  public CartMappingException(@NotNull String message, Throwable cause) {
+  public CartRequestMappingException(@NotNull String message, Throwable cause) {
     super(message, cause);
   }
 }

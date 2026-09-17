@@ -36,6 +36,7 @@ import javax.xml.datatype.DatatypeFactory;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 @SpringBootTest
@@ -262,13 +263,44 @@ class MdbServiceImplTest {
   }
 
   @Test
-  void getPaymentReceipts_KO_ErrorRetrievingReceipt() {
-    WebClientException error = new WebClientException("Error on test call", null);
+  void getPaymentReceipts_KO_ErrorRetrievingReceipt_IllegalArgumentException() {
+    when(reactiveClient.getPaymentReceipt(any(), any()))
+        .thenAnswer(item -> Mono.error(new IllegalArgumentException()));
+
+    Mono<GetMdbReceipt> responseMono =
+        assertDoesNotThrow(() -> mbdService.getPaymentReceipts(FISCAL_CODE_EC, NAV));
+    AppException e = assertThrows(AppException.class, responseMono::block);
+
+    assertNotNull(e);
+    assertEquals(AppError.PAYMENT_RECEIPTS_RESPONSE_MAPPING_ERROR.title, e.getTitle());
+  }
+
+  @Test
+  void getPaymentReceipts_KO_ErrorRetrievingReceipt_404() {
+    WebClientResponseException error =
+        new WebClientResponseException(404, "Not Found", null, null, null);
     when(reactiveClient.getPaymentReceipt(any(), any())).thenAnswer(item -> Mono.error(error));
 
     Mono<GetMdbReceipt> responseMono =
         assertDoesNotThrow(() -> mbdService.getPaymentReceipts(FISCAL_CODE_EC, NAV));
-    assertThrows(AppException.class, responseMono::block);
+    AppException e = assertThrows(AppException.class, responseMono::block);
+
+    assertNotNull(e);
+    assertEquals(AppError.PAYMENT_RECEIPTS_NOT_FOUND.title, e.getTitle());
+  }
+
+  @Test
+  void getPaymentReceipts_KO_ErrorRetrievingReceipt_5XX() {
+    WebClientResponseException error =
+        new WebClientResponseException(500, "Error", null, null, null);
+    when(reactiveClient.getPaymentReceipt(any(), any())).thenAnswer(item -> Mono.error(error));
+
+    Mono<GetMdbReceipt> responseMono =
+        assertDoesNotThrow(() -> mbdService.getPaymentReceipts(FISCAL_CODE_EC, NAV));
+    AppException e = assertThrows(AppException.class, responseMono::block);
+
+    assertNotNull(e);
+    assertEquals(AppError.PAYMENT_RECEIPTS_CALL_ERROR.title, e.getTitle());
   }
 
   private GetMbdRequest buildGetMbdRequest(int documentHashLength) {

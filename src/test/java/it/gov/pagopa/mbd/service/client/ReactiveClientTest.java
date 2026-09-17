@@ -25,6 +25,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 @SpringBootTest
@@ -260,7 +261,7 @@ xmlns:nfp="http://pagopa-api.pagopa.gov.it/node/nodeForPsp.xsd">
     WIRE_MOCK_EXTENSION.stubFor(
         get(urlMatching("/receipt/.*")).willReturn(aResponse().withStatus(500)));
     Mono<byte[]> getResponseMono = reactiveClient.getPaymentReceipt("test", "test");
-    assertThrows(WebClientException.class, getResponseMono::block);
+    assertThrows(WebClientResponseException.class, getResponseMono::block);
   }
 
   private DemandPaymentNoticeRequest buildDemandPaymentNoticeRequest() {

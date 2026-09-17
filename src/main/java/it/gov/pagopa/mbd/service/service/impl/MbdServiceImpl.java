@@ -1,11 +1,13 @@
 package it.gov.pagopa.mbd.service.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.mbd.service.client.ReactiveClient;
 import it.gov.pagopa.mbd.service.exception.AppError;
 import it.gov.pagopa.mbd.service.exception.AppException;
-import it.gov.pagopa.mbd.service.exception.CartMappingException;
+import it.gov.pagopa.mbd.service.exception.CartRequestMappingException;
 import it.gov.pagopa.mbd.service.exception.WebClientException;
 import it.gov.pagopa.mbd.service.mapper.RequestMapper;
+import it.gov.pagopa.mbd.service.model.ProblemJson;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
@@ -16,6 +18,7 @@ import it.gov.pagopa.pagopa_api.node.nodeforpsp.DemandPaymentNoticeResponse;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -24,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.oxm.XmlMappingException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 import reactor.core.publisher.Mono;
 
@@ -37,16 +41,19 @@ public class MbdServiceImpl implements MbdService {
   private final ReactiveClient reactiveSoapClient;
   private final RequestMapper requestMapper;
   private final String mdbLinkBaseUrl;
+  private final ObjectMapper objectMapper;
 
   @Autowired
   public MbdServiceImpl(
       Validator validator,
       ReactiveClient reactiveSoapClient,
       RequestMapper requestMapper,
+      ObjectMapper objectMapper,
       @Value("${mbd.link.baseUrl}") String mdbLinkBaseUrl) {
     this.validator = validator;
     this.reactiveSoapClient = reactiveSoapClient;
     this.requestMapper = requestMapper;
+    this.objectMapper = objectMapper;
     this.mdbLinkBaseUrl = mdbLinkBaseUrl;
   }
 
@@ -66,7 +73,7 @@ public class MbdServiceImpl implements MbdService {
             ConstraintViolationException.class,
             e -> {
               log.error(
-                  "Encountered an error during demandPaymentNotice Validation: {}", e.getMessage());
+                  "Encountered an error during demandPaymentNotice validation: {}", e.getMessage());
               return e;
             })
         .map(
@@ -80,7 +87,7 @@ public class MbdServiceImpl implements MbdService {
             XmlMappingException.class,
             e -> {
               log.error(
-                  "Encountered an error during demandPaymentNotice Request Mapping: {}",
+                  "Encountered an error during demandPaymentNotice request mapping: {}",
                   e.getMessage());
               return new AppException(AppError.PAYMENT_NOTICE_REQUEST_MAP_ERROR, e);
             })
@@ -88,7 +95,7 @@ public class MbdServiceImpl implements MbdService {
         .onErrorMap(
             WebClientException.class,
             e -> {
-              log.error("Encountered an error during demandPaymentNotice Call: {}", e.getMessage());
+              log.error("Encountered an error during demandPaymentNotice call: {}", e.getMessage());
               return new AppException(AppError.PAYMENT_NOTICE_REQUEST_CALL_ERROR, e);
             })
         .map(
@@ -97,16 +104,16 @@ public class MbdServiceImpl implements MbdService {
               return requestMapper.mapCartRequest(request, demandPaymentNoticeResponse);
             })
         .onErrorMap(
-            CartMappingException.class,
+            CartRequestMappingException.class,
             e -> {
-              log.error("Encountered an error during cart mapping: {}", e.getMessage());
+              log.error("Encountered an error during cart request mapping: {}", e.getMessage());
               return new AppException(AppError.CART_REQUEST_MAP_ERROR, e);
             })
         .flatMap(reactiveSoapClient::getCart)
         .onErrorMap(
             WebClientException.class,
             e -> {
-              log.error("Encountered an error during getCart Call: {}", e.getMessage());
+              log.error("Encountered an error during getCart call: {}", e.getMessage());
               return new AppException(AppError.CART_REQUEST_CALL_ERROR, e);
             })
         .map(
@@ -140,7 +147,7 @@ public class MbdServiceImpl implements MbdService {
             ConstraintViolationException.class,
             e -> {
               log.error(
-                  "Encountered an error during demandPaymentNotice Validation: {}", e.getMessage());
+                  "Encountered an error during demandPaymentNotice validation: {}", e.getMessage());
               return e;
             })
         .map(item -> requestMapper.mapDemandPaymentNoticeRequest(organizationFiscalCode, item))
@@ -148,7 +155,7 @@ public class MbdServiceImpl implements MbdService {
             XmlMappingException.class,
             e -> {
               log.error(
-                  "Encountered an error during demandPaymentNotice Request Mapping: {}",
+                  "Encountered an error during demandPaymentNotice request mapping: {}",
                   e.getMessage());
               return new AppException(AppError.PAYMENT_NOTICE_REQUEST_MAP_ERROR, e);
             })
@@ -156,7 +163,7 @@ public class MbdServiceImpl implements MbdService {
         .onErrorMap(
             WebClientException.class,
             e -> {
-              log.error("Encountered an error during demandPaymentNotice Call: {}", e.getMessage());
+              log.error("Encountered an error during demandPaymentNotice call: {}", e.getMessage());
               return new AppException(AppError.PAYMENT_NOTICE_REQUEST_CALL_ERROR, e);
             })
         .map(
@@ -165,16 +172,16 @@ public class MbdServiceImpl implements MbdService {
               return requestMapper.mapCartV2Request(request, demandPaymentNoticeResponse);
             })
         .onErrorMap(
-            CartMappingException.class,
+            CartRequestMappingException.class,
             e -> {
-              log.error("Encountered an error during cart mapping: {}", e.getMessage());
+              log.error("Encountered an error during cart request mapping: {}", e.getMessage());
               return new AppException(AppError.CART_REQUEST_MAP_ERROR, e);
             })
         .flatMap(reactiveSoapClient::getCartV2)
         .onErrorMap(
             WebClientException.class,
             e -> {
-              log.error("Encountered an error during getCart Call: {}", e.getMessage());
+              log.error("Encountered an error during getCart call: {}", e.getMessage());
               return new AppException(AppError.CART_REQUEST_CALL_ERROR, e);
             })
         .map(
@@ -198,17 +205,24 @@ public class MbdServiceImpl implements MbdService {
     return Mono.zip(Mono.just(organizationFiscalCode), Mono.just(nav).map(item -> nav.substring(1)))
         .flatMap(tuple -> reactiveSoapClient.getPaymentReceipt(tuple.getT1(), tuple.getT2()))
         .onErrorMap(
-            WebClientException.class,
+            WebClientResponseException.class,
             e -> {
+              String problemJsonDetail = getProblemJsonDetail(e);
               log.error(
-                  "Encountered an error during getPaymentReceiptCall Call: {}", e.getMessage());
-              return new AppException(AppError.PAYMENT_RECEIPTS_CALL_ERROR, e);
+                  "Encountered an error during getPaymentReceiptCall Call: {}", problemJsonDetail);
+
+              if (e.getStatusCode().value() == 404) {
+                return new AppException(
+                    AppError.PAYMENT_RECEIPTS_NOT_FOUND, e, organizationFiscalCode, nav);
+              }
+              return new AppException(AppError.PAYMENT_RECEIPTS_CALL_ERROR, e, problemJsonDetail);
             })
         .onErrorMap(
             IllegalArgumentException.class,
             e -> {
               log.error("Encountered an error extracting receipt content: {}", e.getMessage());
-              return new AppException(AppError.PAYMENT_RECEIPTS_CALL_ERROR, e);
+              return new AppException(
+                  AppError.PAYMENT_RECEIPTS_RESPONSE_MAPPING_ERROR, e, e.getMessage());
             })
         .map(item -> GetMdbReceipt.builder().content(item).build());
   }
@@ -227,5 +241,19 @@ public class MbdServiceImpl implements MbdService {
                 "organization-fiscal-code", organizationFiscalCode,
                 "nav", noticeNumber))
         .toUriString();
+  }
+
+  private String getProblemJsonDetail(WebClientResponseException e) {
+    byte[] body = e.getResponseBodyAsByteArray();
+    if (body.length == 0) {
+      return "";
+    }
+    try {
+      ProblemJson problem = objectMapper.readValue(body, ProblemJson.class);
+      return problem != null && problem.getDetail() != null ? problem.getDetail() : "";
+    } catch (IOException ex) {
+      log.debug("Upstream error body is not a ProblemJson", ex);
+      return "";
+    }
   }
 }

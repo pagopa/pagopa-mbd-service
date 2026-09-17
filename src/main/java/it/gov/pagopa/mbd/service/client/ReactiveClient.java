@@ -127,7 +127,8 @@ public class ReactiveClient {
    * @param fiscalCode organization fiscal code
    * @param iuv identificativo univoco versamento
    * @return Marca da Bollo attachment as byte array wrapped in Mono
-   * @throws WebClientException if the request fails
+   * @throws IllegalArgumentException if the response mapping fails
+   * @throws WebClientResponseException if the request fails
    */
   public Mono<byte[]> getPaymentReceipt(String fiscalCode, String iuv) {
 
@@ -137,22 +138,20 @@ public class ReactiveClient {
         .header(OCP_SUBSCRIPTION_KEY, clientDataConfig.getGetPaymentReceiptSubscriptionKey())
         .retrieve()
         .bodyToMono(PaSendRTV2Request.class)
-        .map(
-            item -> {
-              assertNotNull(item);
-              CtReceiptV2 ctReceiptV2 = item.getReceipt();
-              assertNotNull(ctReceiptV2);
-              CtTransferListPAReceiptV2 ctTransferListPAReceiptV2 = ctReceiptV2.getTransferList();
-              assertNotNull(ctTransferListPAReceiptV2);
-              List<CtTransferPAReceiptV2> ctTransferPAReceiptV2 =
-                  ctTransferListPAReceiptV2.getTransfer();
-              assertTrue(!ctTransferPAReceiptV2.isEmpty(), "Missing ctTransferPAReceiptV2");
-              assertNotNull(ctTransferPAReceiptV2.get(0).getMBDAttachment());
-              return ctTransferPAReceiptV2.get(0).getMBDAttachment();
-            })
-        .onErrorMap(IllegalArgumentException.class, e -> e)
-        .onErrorMap(
-            WebClientResponseException.class, e -> new WebClientException(e.getMessage(), e));
+        .map(this::extractMBDAttachmentIfPresent);
+  }
+
+  private byte[] extractMBDAttachmentIfPresent(PaSendRTV2Request item) {
+    assertNotNull(item, "Response is null");
+    CtReceiptV2 ctReceiptV2 = item.getReceipt();
+    assertNotNull(ctReceiptV2, "Receipt is null");
+    CtTransferListPAReceiptV2 ctTransferListPAReceiptV2 = ctReceiptV2.getTransferList();
+    assertNotNull(ctTransferListPAReceiptV2, "Receipt transfer list is null");
+    List<CtTransferPAReceiptV2> ctTransferPAReceiptV2 = ctTransferListPAReceiptV2.getTransfer();
+    assertTrue(!ctTransferPAReceiptV2.isEmpty(), "Missing receipt transfer");
+    assertNotNull(
+        ctTransferPAReceiptV2.get(0).getMBDAttachment(), "Receipt transfer MBD attachment is null");
+    return ctTransferPAReceiptV2.get(0).getMBDAttachment();
   }
 
   private DemandPaymentNoticeResponse extractDemandPaymentNoticeResponse(Envelope envelope) {

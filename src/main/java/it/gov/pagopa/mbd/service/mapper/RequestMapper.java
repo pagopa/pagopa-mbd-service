@@ -4,7 +4,7 @@ import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.hibernate.validator.internal.util.Contracts.assertTrue;
 
 import it.gov.pagopa.mbd.service.client.SoapEnvelopeSerializer;
-import it.gov.pagopa.mbd.service.exception.CartMappingException;
+import it.gov.pagopa.mbd.service.exception.CartRequestMappingException;
 import it.gov.pagopa.mbd.service.model.carts.CartPaymentNotice;
 import it.gov.pagopa.mbd.service.model.carts.CartReturnUrls;
 import it.gov.pagopa.mbd.service.model.carts.CartReturnUrlsV2;
@@ -118,7 +118,8 @@ public class RequestMapper {
    * @param request original Marca da Bollo request (v1)
    * @param demandPaymentNoticeResponse response returned by the Nodo
    * @return the {@link GetCartRequest} to be sent to Checkout
-   * @throws CartMappingException if the response is missing required fields or the mapping fails
+   * @throws CartRequestMappingException if the response is missing required fields or the mapping
+   *     fails
    */
   public GetCartRequest mapCartRequest(
       GetMbdRequest request, DemandPaymentNoticeResponse demandPaymentNoticeResponse) {
@@ -151,7 +152,7 @@ public class RequestMapper {
                       .build()))
           .build();
     } catch (Exception e) {
-      throw new CartMappingException(e.getMessage(), e);
+      throw new CartRequestMappingException(e.getMessage(), e);
     }
   }
 
@@ -163,7 +164,8 @@ public class RequestMapper {
    * @param request original Marca da Bollo request (v2)
    * @param demandPaymentNoticeResponse response returned by the Nodo
    * @return the {@link GetCartRequestV2} to be sent to Checkout
-   * @throws CartMappingException if the response is missing required fields or the mapping fails
+   * @throws CartRequestMappingException if the response is missing required fields or the mapping
+   *     fails
    */
   public GetCartRequestV2 mapCartV2Request(
       GetMbdRequestV2 request, DemandPaymentNoticeResponse demandPaymentNoticeResponse) {
@@ -198,7 +200,7 @@ public class RequestMapper {
                       .build()))
           .build();
     } catch (Exception e) {
-      throw new CartMappingException(e.getMessage(), e);
+      throw new CartRequestMappingException(e.getMessage(), e);
     }
   }
 
