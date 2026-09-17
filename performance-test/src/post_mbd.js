@@ -17,11 +17,7 @@ const idCIService = `${vars.idCIService}`;
 
 export default function () {
 
-    console.log(mbdServiceUri);
-
     let response = getMBD(mbdServiceUri, fiscalCodeEC, idCIService);
-
-    console.log("Post MBD call, Status " + response.status);
 
     check(response, {
         'Get MBD status is 200': (response) => response.status === 200,
