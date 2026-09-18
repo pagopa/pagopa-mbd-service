@@ -46,7 +46,7 @@ steps:
 
   - script: |
       cd ./performance-test
-      sh ./run_performance_test.sh ${{ parameters.ENVIRONMENT }} ${{ parameters.TEST_TYPE }} ${{ parameters.SCRIPT }} pagopa-mbd-service $OCP_APIM_SUBSCRIPTION_KEY
+      sh ./run_performance_test.sh ${{ parameters.ENVIRONMENT }} ${{ parameters.TEST_TYPE }} ${{ parameters.SCRIPT }} ebollok6 $OCP_APIM_SUBSCRIPTION_KEY
     displayName: Run k6 ${{ parameters.SCRIPT }} on ${{ parameters.ENVIRONMENT }}
     env:
       OCP_APIM_SUBSCRIPTION_KEY: ${{ variables.API_SUBSCRIPTION_KEY }}
