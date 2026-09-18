@@ -48,11 +48,7 @@ locals {
     "SUBSCRIPTION_ID" : {
       "key" : "${upper(var.env)}_SUBSCRIPTION_ID",
       "value" : data.azurerm_subscription.current.subscription_id
-    },
-    "SUBKEY" : {
-      "key" : "${upper(var.env)}_SUBKEY",
-      "value" : data.azurerm_key_vault_secret.key_vault_integration_test_subkey.value
-    },
+    }
   }
 }
 
