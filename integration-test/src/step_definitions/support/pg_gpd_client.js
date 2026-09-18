@@ -33,7 +33,7 @@ export async function insertDebtPosition({iuv, fiscalCode}) {
                                                    postal_code, province, publish_date, region, status,
                                                    street_name, "type", validity_date, "version",
                                                    switch_to_expired, payment_date, pull, pay_stand_in,
-                                                   service_type, migration_status, archived)
+                                                   service_type)
              VALUES ('Pizzo Calabro', '11', 'PagoPA S.p.A.', 'IT',
                      'john.doe@test.test', 'JHNDOE00A01B157N', 'John Doe',
                      '2024-11-12 16:09:43.477', $1,
@@ -41,7 +41,7 @@ export async function insertDebtPosition({iuv, fiscalCode}) {
                      'SkyLab - Sede via Washington', $2, '333-123456789', '89812',
                      'VV', '2024-11-12 16:09:43.479', 'CA', 'PAID', 'via Washington', 'F',
                      '2024-11-12 16:09:43.479', 0, false, '2024-11-12 17:09:43.477', true, false,
-                     'EBOLLO', NULL, false) RETURNING id`,
+                     'EBOLLO') RETURNING id`,
             [IUPD, fiscalCode]
         );
         const paymentPositionId = positionRes.rows[0].id;
