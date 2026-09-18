@@ -95,6 +95,7 @@ export async function insertDebtPosition({iuv, fiscalCode}) {
         return {paymentPositionId, paymentOptionId, transferId};
     } catch (err) {
         await client.query("ROLLBACK");
+        console.log(`Error inserting debt position: ${err.message}`);
         throw err;
     } finally {
         client.release();
@@ -132,6 +133,7 @@ export async function deleteDebtPosition(paymentPositionId) {
         await client.query("COMMIT");
     } catch (err) {
         await client.query("ROLLBACK");
+        console.log(`Error deleting debt position: ${err.message}`);
         throw err;
     } finally {
         client.release();

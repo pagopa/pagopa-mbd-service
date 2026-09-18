@@ -9,7 +9,9 @@ const client = TableClient.fromConnectionString(
 );
 
 export async function insertPaymentReceiptEntity(organizationFiscalCode, iuv) {
-    return await client.createEntity(
+    console.log(`[gpd-payment-receipt-table] Inserting entity (partitionKey=${organizationFiscalCode}, rowKey=${iuv})...`);
+    try {
+        const result = await client.createEntity(
         {
             partitionKey: organizationFiscalCode,
             rowKey: iuv,
@@ -72,8 +74,39 @@ export async function insertPaymentReceiptEntity(organizationFiscalCode, iuv) {
             status: "PAID"
         }
     );
+        console.log(`[gpd-payment-receipt-table] Entity inserted successfully (partitionKey=${organizationFiscalCode}, rowKey=${iuv})`);
+        return result;
+    } catch (err) {
+        const alreadyExists = err.statusCode === 409 || err.code === "EntityAlreadyExists";
+        if (alreadyExists) {
+            console.error(`[gpd-payment-receipt-table] Entity already exists (partitionKey=${organizationFiscalCode}, rowKey=${iuv})`, err);
+            throw new Error(
+                `Payment receipt entity already exists (partitionKey=${organizationFiscalCode}, rowKey=${iuv}): ${err.message}`
+            );
+        }
+        console.error(`[gpd-payment-receipt-table] Failed to insert entity (partitionKey=${organizationFiscalCode}, rowKey=${iuv})`, err);
+        throw new Error(
+            `Failed to insert payment receipt entity (partitionKey=${organizationFiscalCode}, rowKey=${iuv}): ${err.message}`
+        );
+    }
 }
 
 export async function deletePaymentReceiptEntity(organizationFiscalCode, iuv) {
-    return await client.deleteEntity(organizationFiscalCode, iuv);
+    console.log(`[gpd-payment-receipt-table] Deleting entity (partitionKey=${organizationFiscalCode}, rowKey=${iuv})...`);
+    try {
+        const result = await client.deleteEntity(organizationFiscalCode, iuv);
+        console.log(`[gpd-payment-receipt-table] Entity deleted successfully (partitionKey=${organizationFiscalCode}, rowKey=${iuv})`);
+        return result;
+    } catch (err) {
+        // durante il cleanup l'entità potrebbe non esistere: non far fallire il teardown
+        const notFound = err.statusCode === 404 || err.code === "ResourceNotFound";
+        if (notFound) {
+            console.warn(`[gpd-payment-receipt-table] Entity not found, skipping delete (partitionKey=${organizationFiscalCode}, rowKey=${iuv})`);
+            return;
+        }
+        console.error(`[gpd-payment-receipt-table] Failed to delete entity (partitionKey=${organizationFiscalCode}, rowKey=${iuv})`, err);
+        throw new Error(
+            `Failed to delete payment receipt entity (partitionKey=${organizationFiscalCode}, rowKey=${iuv}): ${err.message}`
+        );
+    }
 }
