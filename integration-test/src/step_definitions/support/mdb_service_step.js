@@ -18,9 +18,11 @@ let paymentPositionId = null;
 // Inserts the PAID debt position and its related receipt into the GPD table.
 Before({tags: "@getMDBReceipt"}, async function () {
     if (paymentPositionId === null) {
+        console.log("Inserting debt position and receipt for getMDBReceipt tests...");
         const result = await insertDebtPosition({iuv, fiscalCode: organizationFiscalCode});
         paymentPositionId = result.paymentPositionId;
         await insertPaymentReceiptEntity(organizationFiscalCode, iuv);
+        console.log("Debt position and receipt inserted successfully for getMDBReceipt tests.");
     }
 });
 
@@ -28,12 +30,15 @@ Before({tags: "@getMDBReceipt"}, async function () {
 AfterAll(async function () {
     try {
         if (paymentPositionId !== null) {
+            console.log("Cleaning up: deleting debt position and receipt created for getMDBReceipt tests...");
             await deleteDebtPosition(paymentPositionId);
             await deletePaymentReceiptEntity(organizationFiscalCode, iuv);
+            console.log("Cleanup completed: debt position and receipt deleted successfully.");
         }
     } finally {
         // Close the pg connection pool, otherwise the test process stays hanging.
         await shutDownPool();
+        console.log("Connection pool closed.");
     }
 });
 
