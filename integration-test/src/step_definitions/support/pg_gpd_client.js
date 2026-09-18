@@ -21,6 +21,7 @@ export async function shutDownPool() {
 const IUPD = "IUPD_INTEGRATION_TEST_EBOLLO_SERVICE";
 
 export async function insertDebtPosition({iuv, fiscalCode}) {
+    console.log(`[pg-gpd] Inserting debt position (iuv=${iuv}, fiscalCode=${fiscalCode})...`);
     const client = await pool.connect();
     try {
         await client.query("BEGIN");
@@ -45,6 +46,7 @@ export async function insertDebtPosition({iuv, fiscalCode}) {
             [IUPD, fiscalCode]
         );
         const paymentPositionId = positionRes.rows[0].id;
+        console.log(`[pg-gpd] Inserted payment_position (id=${paymentPositionId})`);
 
         const optionRes = await client.query(
             `INSERT INTO apd.apd.payment_option (id, amount, description, due_date, fee,
@@ -75,6 +77,7 @@ export async function insertDebtPosition({iuv, fiscalCode}) {
             [iuv, fiscalCode, paymentPositionId, `3${iuv}`]
         );
         const paymentOptionId = optionRes.rows[0].id;
+        console.log(`[pg-gpd] Inserted payment_option (id=${paymentOptionId})`);
 
         const transferRes = await client.query(
             `INSERT INTO apd.apd.transfer (id, amount, category, iban, transfer_id, inserted_date, iuv,
@@ -89,13 +92,15 @@ export async function insertDebtPosition({iuv, fiscalCode}) {
             [iuv, fiscalCode, paymentOptionId]
         );
         const transferId = transferRes.rows[0].id;
+        console.log(`[pg-gpd] Inserted transfer (id=${transferId})`);
 
         await client.query("COMMIT");
 
+        console.log(`[pg-gpd] Debt position committed (paymentPositionId=${paymentPositionId}, paymentOptionId=${paymentOptionId}, transferId=${transferId})`);
         return {paymentPositionId, paymentOptionId, transferId};
     } catch (err) {
         await client.query("ROLLBACK");
-        console.log(`Error inserting debt position: ${err.message}`);
+        console.error(`[pg-gpd] Error inserting debt position (iuv=${iuv}, fiscalCode=${fiscalCode}): ${err.message}`, err);
         throw err;
     } finally {
         client.release();
@@ -103,6 +108,7 @@ export async function insertDebtPosition({iuv, fiscalCode}) {
 }
 
 export async function deleteDebtPosition(paymentPositionId) {
+    console.log(`[pg-gpd] Deleting debt position (paymentPositionId=${paymentPositionId})...`);
     const client = await pool.connect();
     try {
         await client.query("BEGIN");
@@ -131,9 +137,10 @@ export async function deleteDebtPosition(paymentPositionId) {
         );
 
         await client.query("COMMIT");
+        console.log(`[pg-gpd] Debt position deleted (paymentPositionId=${paymentPositionId})`);
     } catch (err) {
         await client.query("ROLLBACK");
-        console.log(`Error deleting debt position: ${err.message}`);
+        console.error(`[pg-gpd] Error deleting debt position (paymentPositionId=${paymentPositionId}): ${err.message}`, err);
         throw err;
     } finally {
         client.release();
