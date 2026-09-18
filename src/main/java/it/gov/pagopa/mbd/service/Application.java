@@ -1,4 +1,4 @@
-package it.gov.pagopa.mbd.service; // TODO: refactor the package
+package it.gov.pagopa.mbd.service;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import org.springframework.boot.SpringApplication;

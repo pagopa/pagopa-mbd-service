@@ -17,6 +17,10 @@ data "azurerm_key_vault" "key_vault" {
   resource_group_name = "pagopa-${var.env_short}-sec-rg"
 }
 
+data "azurerm_key_vault" "gps_key_vault" {
+  name = "pagopa-${var.env_short}-gps-kv"
+  resource_group_name = "pagopa-${var.env_short}-gps-sec-rg"
+}
 
 data "azurerm_user_assigned_identity" "identity_cd_01"{
   name = "${local.prefix}-${var.env_short}-${local.domain}-job-01-github-cd-identity"
@@ -29,8 +33,8 @@ data "azurerm_user_assigned_identity" "identity_pr_01" {
 }
 
 data "azurerm_key_vault" "domain_key_vault" {
-  name                = "pagopa-${var.env_short}-itn-${local.domain}-kv"
-  resource_group_name = "pagopa-${var.env_short}-itn-${local.domain}-sec-rg"
+  name                = "pagopa-${var.env_short}-${local.location_short}-${local.domain}-kv"
+  resource_group_name = "pagopa-${var.env_short}-${local.location_short}-${local.domain}-sec-rg"
 }
 
 data "azurerm_key_vault_secret" "key_vault_sonar" {
@@ -49,14 +53,7 @@ data "azurerm_key_vault_secret" "key_vault_cucumber_token" {
 }
 
 data "azurerm_key_vault_secret" "key_vault_integration_test_subkey" {
-  name         = "integration-test-subkey"
-  key_vault_id = data.azurerm_key_vault.key_vault.id
-}
-
-data "azurerm_key_vault_secret" "key_vault_gpd_api_key" {
-  count        = var.env_short != "p" ? 1 : 0
-  
-  name         = "gpd-api-key-test"
+  name         = "apikey-mbd-integration-test"
   key_vault_id = data.azurerm_key_vault.domain_key_vault.id
 }
 
@@ -72,5 +69,20 @@ data "azurerm_key_vault_secret" "key_vault_integration_test_slack_webhook" {
 
 data "azurerm_user_assigned_identity" "workload_identity_clientid" {
   name                = "ebollo-workload-identity"
-  resource_group_name = "pagopa-${var.env_short}-itn-${var.env}-aks-rg"
+  resource_group_name = "pagopa-${var.env_short}-${local.location_short}-${var.env}-aks-rg"
+}
+
+data "azurerm_key_vault_secret" "key_vault_integration_test_gpd_db_apd_user_psw" {
+  name         = "db-apd-user-password"
+  key_vault_id = data.azurerm_key_vault.gps_key_vault.id
+}
+
+data "azurerm_key_vault_secret" "key_vault_integration_test_gpd_db_apd_user_name" {
+  name         = "db-apd-user-name"
+  key_vault_id = data.azurerm_key_vault.gps_key_vault.id
+}
+
+data "azurerm_cosmosdb_account" "gps_payment_cosmos" {
+  name                = "pagopa-${var.env_short}-weu-gps-payments-cosmos-account"
+  resource_group_name = "pagopa-${var.env_short}-weu-gps-rg"
 }

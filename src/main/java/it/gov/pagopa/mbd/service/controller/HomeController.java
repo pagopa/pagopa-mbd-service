@@ -52,7 +52,7 @@ public class HomeController {
       description = "Return OK if application is started",
       security = {@SecurityRequirement(name = "ApiKey")},
       tags = {"Home"})
-  @GetMapping(value = "/info")
+  @GetMapping(value = {"/v1/info", "/v2/info"})
   @ResponseStatus(HttpStatus.OK)
   public Mono<ResponseEntity<AppInfo>> healthCheck() {
     AppInfo info = AppInfo.builder().name(name).version(version).environment(environment).build();
