@@ -42,7 +42,6 @@ export async function getMdbReceiptV1(organizationFiscalCode, nav) {
             return res;
         })
         .catch(error => {
-            console.error("Error in getMdbReceiptV1:", error.response);
             return error.response;
         });
 }
@@ -55,7 +54,6 @@ export async function getMdbReceiptV2(organizationFiscalCode, nav) {
             return res;
         })
         .catch(error => {
-            console.error("Error in getMdbReceiptV2:", error.response);
             return error.response;
         });
 }

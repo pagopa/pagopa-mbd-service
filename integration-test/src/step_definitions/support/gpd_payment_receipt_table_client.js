@@ -9,9 +9,8 @@ const client = TableClient.fromConnectionString(
 );
 
 export async function insertPaymentReceiptEntity(organizationFiscalCode, iuv) {
-    console.log(`[gpd-payment-receipt-table] Inserting entity (partitionKey=${organizationFiscalCode}, rowKey=${iuv})...`);
     try {
-        const result = await client.createEntity(
+        return  await client.createEntity(
         {
             partitionKey: organizationFiscalCode,
             rowKey: iuv,
@@ -74,8 +73,6 @@ export async function insertPaymentReceiptEntity(organizationFiscalCode, iuv) {
             status: "PAID"
         }
     );
-        console.log(`[gpd-payment-receipt-table] Entity inserted successfully (partitionKey=${organizationFiscalCode}, rowKey=${iuv})`);
-        return result;
     } catch (err) {
         const alreadyExists = err.statusCode === 409 || err.code === "EntityAlreadyExists";
         if (alreadyExists) {
@@ -92,11 +89,8 @@ export async function insertPaymentReceiptEntity(organizationFiscalCode, iuv) {
 }
 
 export async function deletePaymentReceiptEntity(organizationFiscalCode, iuv) {
-    console.log(`[gpd-payment-receipt-table] Deleting entity (partitionKey=${organizationFiscalCode}, rowKey=${iuv})...`);
     try {
-        const result = await client.deleteEntity(organizationFiscalCode, iuv);
-        console.log(`[gpd-payment-receipt-table] Entity deleted successfully (partitionKey=${organizationFiscalCode}, rowKey=${iuv})`);
-        return result;
+        return  await client.deleteEntity(organizationFiscalCode, iuv);
     } catch (err) {
         // durante il cleanup l'entità potrebbe non esistere: non far fallire il teardown
         const notFound = err.statusCode === 404 || err.code === "ResourceNotFound";
