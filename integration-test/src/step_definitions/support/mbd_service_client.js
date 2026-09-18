@@ -16,7 +16,6 @@ export async function getMDBV1(organizationFiscalCode, body) {
             return res;
         })
         .catch(error => {
-            console.error("Error in getMDBV1:", error.response);
             return error.response;
         });
 
@@ -30,7 +29,6 @@ export async function getMDBV2(organizationFiscalCode, body) {
             return res;
         })
         .catch(error => {
-            console.error("Error in getMDBV2:", error.response);
             return error.response;
         });
 
