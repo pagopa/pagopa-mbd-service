@@ -36,9 +36,9 @@ Feature: e.Bollo 2.0 APIs
     Then response has a 200 Http status
 
   @getMDBReceipt
-  Scenario: Execute a request to getMDBReceipt V1 API with wrong data
+  Scenario: Execute a request to getMDBReceipt V1 API with an unauthorized organization
     When an Http GET request is sent to the mdb-service getMDBReceipt V2 with "wrong_ec"
-    Then response has a 404 Http status
+    Then response has a 403 Http status
 
   @getMDBReceipt
   Scenario: Execute a request to getMDBReceipt V1 API with wrong data
@@ -51,9 +51,9 @@ Feature: e.Bollo 2.0 APIs
     Then response has a 200 Http status
 
   @getMDBReceipt
-  Scenario: Execute a request to getMDBReceipt V2 API with wrong data
+  Scenario: Execute a request to getMDBReceipt V2 API with an unauthorized organization
     When an Http GET request is sent to the mdb-service getMDBReceipt V2 with "wrong_ec"
-    Then response has a 404 Http status
+    Then response has a 403 Http status
 
   @getMDBReceipt
   Scenario: Execute a request to getMDBReceipt V2 API with wrong data
