@@ -42,5 +42,5 @@ export function getReceipt(url, fiscalCode,nav) {
     'Ocp-Apim-Subscription-Key': subKey,
   };
 
-  return http.get(url + "/" + fiscalCode + "/receipt/" + nav, { headers, responseType: "text"});
+  return http.get(url + "/" + fiscalCode + "/noticeNumbers/" + nav + "/mbd", { headers, responseType: "text"});
 }
