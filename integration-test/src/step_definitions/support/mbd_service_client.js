@@ -8,10 +8,10 @@ const mbdClient = axios.create({
     }
 });
 
-async function getMDBV1(fiscalCodeEC, body) {
+export async function getMDBV1(organizationFiscalCode, body) {
     let headers = {};
 
-    return await mbdClient.post(`/v1/organizations/${fiscalCodeEC}/mbd`, body, {headers})
+    return await mbdClient.post(`/v1/organizations/${organizationFiscalCode}/mbd`, body, {headers})
         .then(res => {
             return res;
         })
@@ -21,10 +21,10 @@ async function getMDBV1(fiscalCodeEC, body) {
 
 }
 
-async function getMDBV2(fiscalCodeEC, body) {
+export async function getMDBV2(organizationFiscalCode, body) {
     let headers = {};
 
-    return await mbdClient.post(`/v2/organizations/${fiscalCodeEC}/mbd`, body, {headers})
+    return await mbdClient.post(`/v2/organizations/${organizationFiscalCode}/mbd`, body, {headers})
         .then(res => {
             return res;
         })
@@ -34,10 +34,10 @@ async function getMDBV2(fiscalCodeEC, body) {
 
 }
 
-async function getMdbReceiptV1(organizationalFiscalCode, nav) {
+export async function getMdbReceiptV1(organizationFiscalCode, nav) {
     let headers = {};
 
-    return await mbdClient.get(`/v1/organizations/${organizationalFiscalCode}/receipt/${nav}`, {headers})
+    return await mbdClient.get(`/v1/organizations/${organizationFiscalCode}/receipt/${nav}`, {headers})
         .then(res => {
             return res;
         })
@@ -46,10 +46,10 @@ async function getMdbReceiptV1(organizationalFiscalCode, nav) {
         });
 }
 
-async function getMdbReceiptV2(organizationalFiscalCode, nav) {
+export async function getMdbReceiptV2(organizationFiscalCode, nav) {
     let headers = {};
 
-    return await mbdClient.get(`/v2/organizations/${organizationalFiscalCode}/noticeNumbers/${nav}/mbd`, {headers})
+    return await mbdClient.get(`/v2/organizations/${organizationFiscalCode}/noticeNumbers/${nav}/mbd`, {headers})
         .then(res => {
             return res;
         })
@@ -57,5 +57,3 @@ async function getMdbReceiptV2(organizationalFiscalCode, nav) {
             return error.response;
         });
 }
-
-export {getMDBV1, getMDBV2, getMdbReceiptV1, getMdbReceiptV2};

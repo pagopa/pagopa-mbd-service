@@ -38,12 +38,12 @@ Feature: e.Bollo 2.0 APIs
   @getMDBReceipt
   Scenario: Execute a request to getMDBReceipt V1 API with wrong data
     When an Http GET request is sent to the mdb-service getMDBReceipt V2 with "wrong_ec"
-    Then response has a 500 Http status
+    Then response has a 404 Http status
 
   @getMDBReceipt
   Scenario: Execute a request to getMDBReceipt V1 API with wrong data
     When an Http GET request is sent to the mdb-service getMDBReceipt V1 with "wrong_nav"
-    Then response has a 500 Http status
+    Then response has a 404 Http status
 
   @getMDBReceipt
   Scenario: Execute a request to getMDB Receipt V2 API with valid content
@@ -53,10 +53,10 @@ Feature: e.Bollo 2.0 APIs
   @getMDBReceipt
   Scenario: Execute a request to getMDBReceipt V2 API with wrong data
     When an Http GET request is sent to the mdb-service getMDBReceipt V2 with "wrong_ec"
-    Then response has a 500 Http status
+    Then response has a 404 Http status
 
   @getMDBReceipt
   Scenario: Execute a request to getMDBReceipt V2 API with wrong data
     When an Http GET request is sent to the mdb-service getMDBReceipt V2 with "wrong_nav"
-    Then response has a 500 Http status
+    Then response has a 404 Http status
 

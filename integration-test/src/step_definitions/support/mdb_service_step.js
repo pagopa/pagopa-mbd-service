@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('node:assert');
 const {When, Then, Before, AfterAll, setDefaultTimeout} = require('@cucumber/cucumber');
 const {insertPaymentReceiptEntity, deletePaymentReceiptEntity} = require("./gpd_payment_receipt_table_client");
 const {insertDebtPosition, deleteDebtPosition, shutDownPool} = require("./pg_gpd_client");
@@ -52,7 +52,7 @@ When('an Http GET request is sent to the mdb-service getMDB V1 with {string}', a
             break;
     }
 
-    this.response = await getMDBV1(fiscalCodeEC, body);
+    this.response = await getMDBV1(organizationFiscalCode, body);
 });
 
 When('an Http GET request is sent to the mdb-service getMDB V2 with {string}', async function (inputType) {
@@ -69,7 +69,7 @@ When('an Http GET request is sent to the mdb-service getMDB V2 with {string}', a
             break;
     }
 
-    this.response = await getMDBV2(fiscalCodeEC, body);
+    this.response = await getMDBV2(organizationFiscalCode, body);
 });
 
 Then('response body contains checkoutUrl', function () {
@@ -82,7 +82,6 @@ Then('response contains mdb link', function () {
 
 Then('response contains mdb nav', function () {
     assert.notEqual(this.response?.data?.nav, null);
-    this.correctNav = this.response?.data?.nav;
 });
 
 

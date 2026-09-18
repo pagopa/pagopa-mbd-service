@@ -61,7 +61,8 @@ export async function insertDebtPosition({iuv, fiscalCode}) {
                                                  payment_plan_id,
                                                  switch_to_expired, validity_date,
                                                  payment_option_description)
-             VALUES (nextval('apd.payment_opt_seq'), 1600, 'Pagamento marca da bollo digitale', '2024-12-12 16:09:43.323', 50,
+             VALUES (nextval('apd.payment_opt_seq'), 1600, 'Pagamento marca da bollo digitale',
+                     '2024-12-12 16:09:43.323', 50,
                      NULL, '380842b0b83f4d0fbfc1062378f20a28',
                      '2024-11-12 16:09:43.477', false, $1, '2024-11-12 16:09:43.477',
                      $2, '2024-11-12 17:09:43.477', 'creditCard', 'Intesa Sanpaolo S.p.A',
