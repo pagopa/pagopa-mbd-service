@@ -26,9 +26,6 @@ public class WebClientConfiguration {
                     conn.addHandlerLast(new ReadTimeoutHandler(5000, TimeUnit.MILLISECONDS))
                         .addHandlerLast(new WriteTimeoutHandler(5000, TimeUnit.MILLISECONDS)));
 
-    WebClient webClient =
-        WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
-
-    return webClient;
+    return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
   }
 }

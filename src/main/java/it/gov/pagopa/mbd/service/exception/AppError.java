@@ -14,24 +14,32 @@ public enum AppError {
       HttpStatus.BAD_GATEWAY, "Response Not Readable", "The response body is not readable"),
   PAYMENT_NOTICE_REQUEST_MAP_ERROR(
       HttpStatus.INTERNAL_SERVER_ERROR,
-      "Error Mapping DemandPaymentNoticeRequest",
-      "Error Mapping DemandPaymentNoticeRequest"),
+      "Error mapping DemandPaymentNoticeRequest",
+      "Error mapping DemandPaymentNoticeRequest"),
   PAYMENT_NOTICE_REQUEST_CALL_ERROR(
       HttpStatus.INTERNAL_SERVER_ERROR,
-      "Error Calling DemandPaymentNoticeRequest",
-      "Error Calling DemandPaymentNoticeRequest"),
+      "Error calling DemandPaymentNoticeRequest",
+      "Error calling DemandPaymentNoticeRequest"),
   CART_REQUEST_MAP_ERROR(
       HttpStatus.INTERNAL_SERVER_ERROR,
-      "Error Calling GetCartRequest",
-      "Error Mapping GetCartRequest"),
+      "Error mapping GetCartRequest",
+      "Error mapping GetCartRequest"),
   CART_REQUEST_CALL_ERROR(
       HttpStatus.INTERNAL_SERVER_ERROR,
-      "Error Calling GetCartRequest",
-      "Error Mapping GetCartRequest"),
+      "Error retrieving GetCartRequest",
+      "Error calling cart API"),
+  PAYMENT_RECEIPTS_NOT_FOUND(
+      HttpStatus.NOT_FOUND,
+      "Payment Receipts not found",
+      "Error invoking GetPaymentReceipts, Payment Receipts for organization fiscal code %s and nav %s not found"),
+  PAYMENT_RECEIPTS_RESPONSE_MAPPING_ERROR(
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      "Error extracting Payment Receipts response",
+      "Error mapping GetPaymentReceipts response: %s"),
   PAYMENT_RECEIPTS_CALL_ERROR(
       HttpStatus.INTERNAL_SERVER_ERROR,
-      "Error Calling Payment Receipts",
-      "Error Mapping GetPaymentReceipts"),
+      "Error invoking Payment Receipts",
+      "Error in GetPaymentReceipts response: %s"),
 
   UNKNOWN(null, null, null);
 
