@@ -16,7 +16,7 @@ class HomeControllerTest {
   @Autowired private WebTestClient webClient;
 
   @ParameterizedTest
-  @ValueSource(strings = {"/v1/info", "/v2/info"})
+  @ValueSource(strings = {"/info", "/v1/info", "/v2/info"})
   void healthCheckTestSuccess(String infoEndpoint) {
     webClient.get().uri(infoEndpoint).exchange().expectStatus().is2xxSuccessful();
   }
