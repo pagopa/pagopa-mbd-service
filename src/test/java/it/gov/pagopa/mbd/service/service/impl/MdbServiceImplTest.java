@@ -60,7 +60,7 @@ class MdbServiceImplTest {
         GetCartResponse.builder().checkoutRedirectUrl("testUrl").build();
     when(reactiveClient.getCart(any())).thenAnswer(item -> Mono.just(getCartResponse));
 
-    GetMbdRequest getMbdRequest = buildGetMbdRequest(44);
+    GetMbdRequest getMbdRequest = buildGetMbdRequest(true);
     Mono<GetCartResponse> responseMono =
         assertDoesNotThrow(() -> mbdService.getMbd(FISCAL_CODE_EC, getMbdRequest));
 
@@ -74,7 +74,7 @@ class MdbServiceImplTest {
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.error(new WebClientException("Error", null)));
 
-    GetMbdRequest getMbdRequest = buildGetMbdRequest(44);
+    GetMbdRequest getMbdRequest = buildGetMbdRequest(true);
     Mono<GetCartResponse> responseMono =
         assertDoesNotThrow(() -> mbdService.getMbd(FISCAL_CODE_EC, getMbdRequest));
     AppException appException = assertThrows(AppException.class, responseMono::block);
@@ -90,7 +90,7 @@ class MdbServiceImplTest {
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
 
-    GetMbdRequest getMbdRequest = buildGetMbdRequest(44);
+    GetMbdRequest getMbdRequest = buildGetMbdRequest(true);
     Mono<GetCartResponse> responseMono =
         assertDoesNotThrow(() -> mbdService.getMbd(FISCAL_CODE_EC, getMbdRequest));
     AppException appException = assertThrows(AppException.class, responseMono::block);
@@ -109,7 +109,7 @@ class MdbServiceImplTest {
     when(reactiveClient.getCart(any()))
         .thenAnswer(item -> Mono.error(new WebClientException("Error", null)));
 
-    GetMbdRequest getMbdRequest = buildGetMbdRequest(44);
+    GetMbdRequest getMbdRequest = buildGetMbdRequest(true);
     Mono<GetCartResponse> responseMono =
         assertDoesNotThrow(() -> mbdService.getMbd(FISCAL_CODE_EC, getMbdRequest));
     AppException appException = assertThrows(AppException.class, responseMono::block);
@@ -118,7 +118,7 @@ class MdbServiceImplTest {
   }
 
   @Test
-  void getMdb_KO_RequestValidationError_WrongDocumentHashLength()
+  void getMdb_KO_RequestValidationError_WrongDocumentHash()
       throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
     when(reactiveClient.demandPaymentNotice(any()))
@@ -128,7 +128,7 @@ class MdbServiceImplTest {
         GetCartResponse.builder().checkoutRedirectUrl("testUrl").build();
     when(reactiveClient.getCart(any())).thenAnswer(item -> Mono.just(getCartResponse));
 
-    GetMbdRequest getMbdRequest = buildGetMbdRequest(10);
+    GetMbdRequest getMbdRequest = buildGetMbdRequest(false);
     Mono<GetCartResponse> responseMono = mbdService.getMbd(FISCAL_CODE_EC, getMbdRequest);
     assertThrows(ConstraintViolationException.class, responseMono::block);
   }
@@ -143,7 +143,7 @@ class MdbServiceImplTest {
         GetCartResponse.builder().checkoutRedirectUrl("testUrl").build();
     when(reactiveClient.getCart(any())).thenAnswer(item -> Mono.just(getCartResponse));
 
-    GetMbdRequest getMbdRequest = buildGetMbdRequest(44);
+    GetMbdRequest getMbdRequest = buildGetMbdRequest(true);
     getMbdRequest.getPaymentNotices().get(0).setFiscalCode("AAAAAAA");
     Mono<GetCartResponse> responseMono = mbdService.getMbd(FISCAL_CODE_EC, getMbdRequest);
     assertThrows(ConstraintViolationException.class, responseMono::block);
@@ -159,7 +159,7 @@ class MdbServiceImplTest {
         GetCartResponse.builder().checkoutRedirectUrl("testUrl").build();
     when(reactiveClient.getCartV2(any())).thenAnswer(item -> Mono.just(getCartResponse));
 
-    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(44);
+    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
     Mono<GetCartResponse> responseMono =
         assertDoesNotThrow(() -> mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest));
 
@@ -173,7 +173,7 @@ class MdbServiceImplTest {
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.error(new WebClientException("Error", null)));
 
-    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(44);
+    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
     Mono<GetCartResponse> responseMono =
         assertDoesNotThrow(() -> mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest));
     AppException appException = assertThrows(AppException.class, responseMono::block);
@@ -189,7 +189,7 @@ class MdbServiceImplTest {
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
 
-    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(44);
+    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
     Mono<GetCartResponse> responseMono =
         assertDoesNotThrow(() -> mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest));
     AppException appException = assertThrows(AppException.class, responseMono::block);
@@ -208,7 +208,7 @@ class MdbServiceImplTest {
     when(reactiveClient.getCartV2(any()))
         .thenAnswer(item -> Mono.error(new WebClientException("Error", null)));
 
-    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(44);
+    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
     Mono<GetCartResponse> responseMono =
         assertDoesNotThrow(() -> mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest));
     AppException appException = assertThrows(AppException.class, responseMono::block);
@@ -217,7 +217,7 @@ class MdbServiceImplTest {
   }
 
   @Test
-  void getMdbV2_KO_RequestValidationError_WrongDocumentHashLength()
+  void getMdbV2_KO_RequestValidationError_WrongDocumentHash()
       throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
     when(reactiveClient.demandPaymentNotice(any()))
@@ -227,7 +227,7 @@ class MdbServiceImplTest {
         GetCartResponse.builder().checkoutRedirectUrl("testUrl").build();
     when(reactiveClient.getCartV2(any())).thenAnswer(item -> Mono.just(getCartResponse));
 
-    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(10);
+    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(false);
     Mono<GetCartResponse> responseMono = mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest);
     assertThrows(ConstraintViolationException.class, responseMono::block);
   }
@@ -243,7 +243,7 @@ class MdbServiceImplTest {
         GetCartResponse.builder().checkoutRedirectUrl("testUrl").build();
     when(reactiveClient.getCartV2(any())).thenAnswer(item -> Mono.just(getCartResponse));
 
-    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(44);
+    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
     getMbdRequest.getPaymentNotices().get(0).getDebtor().getUniqueIdentifier().setValue("AAAAAAA");
     Mono<GetCartResponse> responseMono = mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest);
     assertThrows(ConstraintViolationException.class, responseMono::block);
@@ -303,14 +303,14 @@ class MdbServiceImplTest {
     assertEquals(AppError.PAYMENT_RECEIPTS_CALL_ERROR.title, e.getTitle());
   }
 
-  private GetMbdRequest buildGetMbdRequest(int documentHashLength) {
+  private GetMbdRequest buildGetMbdRequest(boolean validDocumentHash) {
     return GetMbdRequest.builder()
         .idCIService("1000")
         .paymentNotices(
             Collections.singletonList(
                 PaymentNotice.builder()
                     .amount(1000L)
-                    .documentHash("1".repeat(documentHashLength))
+                    .documentHash(validDocumentHash ? "1" : null)
                     .email("test@gmail.com")
                     .fiscalCode(FISCAL_CODE)
                     .lastName("debtor last name")
@@ -326,14 +326,14 @@ class MdbServiceImplTest {
         .build();
   }
 
-  private GetMbdRequestV2 buildGetMbdRequestV2(int documentHashLength) {
+  private GetMbdRequestV2 buildGetMbdRequestV2(boolean validDocumentHash) {
     return GetMbdRequestV2.builder()
         .paymentNotices(
             Collections.singletonList(
                 PaymentNoticeV2.builder()
                     .amount(1000L)
                     .province("RM")
-                    .documentHash("1".repeat(documentHashLength))
+                    .documentHash(validDocumentHash ? "1" : null)
                     .debtor(
                         Debtor.builder()
                             .email("test@gmail.com")

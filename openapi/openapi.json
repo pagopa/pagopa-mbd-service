@@ -45,6 +45,51 @@
     }
   ],
   "paths": {
+    "/info": {
+      "get": {
+        "description": "Return OK if application is started",
+        "operationId": "healthCheck_2",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppInfo"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "X-Request-Id": {
+                "description": "This header identifies the call",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKey": []
+          }
+        ],
+        "summary": "health check",
+        "tags": [
+          "Home"
+        ]
+      },
+      "parameters": [
+        {
+          "description": "This header identifies the call, if not passed it is self-generated. This ID is returned in the response.",
+          "in": "header",
+          "name": "X-Request-Id",
+          "schema": {
+            "type": "string"
+          }
+        }
+      ]
+    },
     "/v1/info": {
       "get": {
         "description": "Return OK if application is started",
@@ -887,8 +932,6 @@
             "example": 1600
           },
           "documentHash": {
-            "maxLength": 44,
-            "minLength": 44,
             "type": "string",
             "description": "Document hash."
           },
@@ -939,8 +982,6 @@
             "$ref": "#/components/schemas/Debtor"
           },
           "documentHash": {
-            "maxLength": 44,
-            "minLength": 44,
             "type": "string",
             "description": "Document hash."
           },
