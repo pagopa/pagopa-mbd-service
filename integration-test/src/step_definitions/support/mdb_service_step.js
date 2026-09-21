@@ -49,7 +49,7 @@ When('an Http GET request is sent to the mdb-service getMDB V1 with {string}', a
             body.paymentNotices[0].fiscalCode = null;
             break;
         case "wrong_hash_document":
-            body.paymentNotices[0].documentHash = "A";
+            body.paymentNotices[0].documentHash = null;
             break;
     }
 
@@ -66,7 +66,7 @@ When('an Http GET request is sent to the mdb-service getMDB V2 with {string}', a
             body.paymentNotices[0].debtor.uniqueIdentifier.value = null;
             break;
         case "wrong_hash_document":
-            body.paymentNotices[0].documentHash = "A";
+            body.paymentNotices[0].documentHash = null;
             break;
     }
 
