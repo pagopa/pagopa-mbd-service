@@ -28,7 +28,7 @@ resource "azurerm_api_management_api_version_set" "api_mbd_service" {
 ##############
 
 module "apim_mbd_api_v1" {
-  source = "git::https://github.com/pagopa/terraform-azurerm-v3.git//api_management_api?ref=v6.4.1"
+  source = "./.terraform/modules/__v3__/api_management_api"
 
   name                  = format("%s-mbd-api", var.env_short)
   api_management_name   = local.apim.name
@@ -53,7 +53,7 @@ module "apim_mbd_api_v1" {
 }
 
 module "apim_mbd_api_v2" {
-  source = "git::https://github.com/pagopa/terraform-azurerm-v3.git//api_management_api?ref=v6.4.1"
+  source = "./.terraform/modules/__v3__/api_management_api"
 
   name                  = format("%s-mbd-api", var.env_short)
   api_management_name   = local.apim.name
