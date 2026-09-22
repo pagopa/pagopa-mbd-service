@@ -8,10 +8,6 @@ terraform {
       source  = "hashicorp/azuread"
       version = "2.30.0"
     }
-    httpclient = {
-      source  = "dmachard/http-client"
-      version = "~> 0.1"
-    }
   }
 
   backend "azurerm" {}

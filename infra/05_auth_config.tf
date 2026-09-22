@@ -25,35 +25,52 @@ resource "azurerm_api_management_subscription" "authorizer_config_subkey" {
   state         = "active"
 }
 
-data "httpclient_request" "create_authorizer_config" {
-  url            = "https://${local.apim.hostname}/shared/authorizer-config/v1/authorizations"
-  request_method = "POST"
-
-  request_headers = {
-    Content-Type              = "application/json"
-    Ocp-Apim-Subscription-Key = azurerm_api_management_subscription.authorizer_config_subkey.primary_key
+# Runs on every `terraform apply` (never on `plan`) to ensure the authorizer
+# configuration for the subkey of gpd-payments exists. Idempotent: 200 = created,
+# 409 = already present. Any other status fails the apply.
+resource "null_resource" "create_authorizer_config" {
+  triggers = {
+    always_run = timestamp()
   }
 
-  request_body = jsonencode({
-    domain           = "gpd"
-    subscription_key = data.azurerm_key_vault_secret.payments_key_subscription_key.value
-    description      = "Key configuration for eBollo mbd-service"
-    owner = {
-      id   = "15376371009"
-      name = "PagoPa S.p.A"
-      type = "BROKER"
+  provisioner "local-exec" {
+    interpreter = ["bash", "-c"]
+
+    environment = {
+      APIM_HOSTNAME    = local.apim.hostname
+      APIM_SUB_KEY     = azurerm_api_management_subscription.authorizer_config_subkey.primary_key
+      GPD_PAYMENTS_SUB_KEY = data.azurerm_key_vault_secret.payments_key_subscription_key.value
     }
-    authorized_entities = [
-      {
-        name  = "All entities"
-        value = "*"
-      }
-    ],
-    other_metadata = []
-  })
 
-  # 201 configuration created, 409 configuration already exists
-  expected_status_codes = [201, 409]
+    command = <<-EOT
+      set -euo pipefail
 
-  fail_on_http_error = true
+      body=$(jq -n --arg subkey "$GPD_PAYMENTS_SUB_KEY" '{
+        domain: "gpd",
+        subscription_key: $subkey,
+        description: "Key configuration for eBollo mbd-service",
+        owner: { id: "15376371009", name: "PagoPa S.p.A", type: "BROKER" },
+        authorized_entities: [ { name: "All entities", value: "*" } ],
+        other_metadata: []
+      }')
+
+      resp_file=$(mktemp)
+      status=$(curl -sS -o "$resp_file" -w "%%{http_code}" \
+        -X POST "https://$APIM_HOSTNAME/shared/authorizer-config/v1/authorizations" \
+        -H "Content-Type: application/json" \
+        -H "Ocp-Apim-Subscription-Key: $APIM_SUB_KEY" \
+        --data "$body")
+
+      if [ "$status" = "200" ] || [ "$status" = "409" ]; then
+        echo "Authorizer config check OK (HTTP $status)"
+        rm -f "$resp_file"
+        exit 0
+      fi
+
+      echo "Authorizer config call failed: HTTP $status"
+      cat "$resp_file"
+      rm -f "$resp_file"
+      exit 1
+    EOT
+  }
 }
