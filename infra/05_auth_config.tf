@@ -58,9 +58,9 @@ resource "null_resource" "create_authorizer_config" {
     interpreter = ["bash", "-c"]
 
     environment = {
-      APIM_HOSTNAME    = local.apim.hostname
-      APIM_SUB_KEY     = azurerm_api_management_subscription.authorizer_config_subkey.primary_key
-      GPD_PAYMENTS_SUB_KEY = data.azurerm_key_vault_secret.payments_key_subscription_key.value
+      APIM_HOSTNAME             = local.apim.hostname
+      AUTHORIZER_SERVICE_SUBKEY = azurerm_api_management_subscription.authorizer_config_subkey.primary_key
+      GPD_PAYMENTS_SUB_KEY      = data.azurerm_key_vault_secret.payments_key_subscription_key.value
     }
 
     command = <<-EOT
@@ -79,7 +79,7 @@ resource "null_resource" "create_authorizer_config" {
       status=$(curl -sS -o "$resp_file" -w "%%{http_code}" \
         -X POST "https://$APIM_HOSTNAME/shared/authorizer-config/v1/authorizations" \
         -H "Content-Type: application/json" \
-        -H "Ocp-Apim-Subscription-Key: $APIM_SUB_KEY" \
+        -H "Ocp-Apim-Subscription-Key: $AUTHORIZER_SERVICE_SUBKEY" \
         --data "$body")
 
       if [ "$status" = "200" ] || [ "$status" = "409" ]; then
@@ -104,42 +104,47 @@ resource "null_resource" "create_authorizer_config" {
 # previous instance of this resource (i.e., on rotation).
 #
 # Behavior:
-#   - `triggers` captures the current subkey, APIM hostname, and APIM
-#     subscription key. When any trigger changes, Terraform replaces the
-#     resource: it destroys the OLD instance (running the destroy provisioner
-#     with the OLD trigger values via `self.triggers`) and creates a new one.
+#   - `triggers` captures the current subkey, APIM hostname, and authorizer
+#     service subkey. When ANY value changes, Terraform replaces the resource:
+#     destroys the OLD instance (running the destroy provisioner with the OLD
+#     trigger values via `self.triggers`) and creates a new one.
 #   - Destroy provisioner:
-#       1. GET /authorizations/subkey/{oldSubkey} to obtain the id(s).
-#       2. DELETE /authorizations/{id} for each match.
-#     Accepted statuses: 200/204 (deleted), 404 (already gone), empty list
-#     (nothing to do). Anything else fails the apply.
+#       1. GET /authorizations/subkey/{oldSubkey} to obtain the id.
+#       2. DELETE /authorizations/{id}.
+#     Accepted statuses: 200/204 (deleted), 404 (already gone), empty
+#     response (nothing to do). Anything else fails the apply.
 #   - Create is a no-op; the row for the NEW subkey is (re)created by
 #     `create_authorizer_config` on the same apply.
 #
 # Side effects / things to be aware of:
 #   - Terraform forbids referencing anything except `self`, `count`, or `each`
-#     inside a destroy provisioner. That's why hostname and APIM subscription
-#     key are duplicated into `triggers` — they must be available on the
-#     resource being destroyed, whose state holds the OLD values.
-#   - Rotating the APIM subscription key of `authorizer_config_subkey` (e.g.,
-#     from the Azure portal) also triggers replacement of this resource. The
-#     destroy provisioner then DELETEs the current authorizer row and
+#     inside a destroy provisioner. That's why hostname and authorizer service
+#     subkey are duplicated into `triggers` — they must be readable via
+#     `self.triggers` on the resource being destroyed.
+#   - Rotating the authorizer service subkey (i.e., the APIM subscription
+#     `authorizer_config_subkey`, e.g., from the Azure portal) ALSO triggers
+#     replacement. The destroy provisioner then DELETEs the current authorizer
+#     row using the OLD authorizer service subkey stored in triggers, and
 #     `create_authorizer_config` re-POSTs it on the same apply. Functionally
-#     correct but produces an extra DELETE+POST cycle on the authorizer DB.
-#   - The hostname trigger never changes in practice (fixed per environment),
-#     so it does not cause spurious replacements.
+#     correct but produces an extra DELETE + re-POST cycle on the authorizer
+#     DB. As long as `terraform apply` is run BEFORE the old key is revoked,
+#     this works.
+#   - CAVEAT: if the authorizer service subkey is rotated in the portal
+#     WITHOUT running `terraform apply` before the old key is invalidated,
+#     the destroy provisioner will 401 (state still holds the invalid old
+#     key). Recover with
+#     `terraform state rm null_resource.cleanup_authorizer_config`
+#     to skip the failed destroy, then clean the stale row manually via API.
+#   - The hostname trigger never changes in practice (fixed per environment).
 #   - On `terraform destroy` of this stack, the destroy provisioner fires and
 #     removes the authorizer row. This is the correct teardown behavior but
 #     means destroying the stack revokes access for mbd-service.
-#   - If the GET returns multiple authorizations for the same subkey (edge
-#     case), all of them are deleted. This is defensive and matches the
-#     "one subkey = one config" invariant.
 # -----------------------------------------------------------------------------
 resource "null_resource" "cleanup_authorizer_config" {
   triggers = {
-    subkey        = data.azurerm_key_vault_secret.payments_key_subscription_key.value
-    apim_hostname = local.apim.hostname
-    apim_sub_key  = azurerm_api_management_subscription.authorizer_config_subkey.primary_key
+    subkey                    = data.azurerm_key_vault_secret.payments_key_subscription_key.value
+    apim_hostname             = local.apim.hostname
+    authorizer_service_subkey = azurerm_api_management_subscription.authorizer_config_subkey.primary_key
   }
 
   provisioner "local-exec" {
@@ -147,9 +152,9 @@ resource "null_resource" "cleanup_authorizer_config" {
     interpreter = ["bash", "-c"]
 
     environment = {
-      APIM_HOSTNAME        = self.triggers.apim_hostname
-      APIM_SUB_KEY         = self.triggers.apim_sub_key
-      GPD_PAYMENTS_SUB_KEY = self.triggers.subkey
+      APIM_HOSTNAME             = self.triggers.apim_hostname
+      AUTHORIZER_SERVICE_SUBKEY = self.triggers.authorizer_service_subkey
+      GPD_PAYMENTS_SUB_KEY      = self.triggers.subkey
     }
 
     command = <<-EOT
@@ -157,11 +162,11 @@ resource "null_resource" "cleanup_authorizer_config" {
 
       base_url="https://$APIM_HOSTNAME/shared/authorizer-config/v1/authorizations"
 
-      # 1) Lookup authorization(s) by subkey to obtain the id(s).
+      # 1) Lookup the authorization by subkey to obtain its id.
       lookup_file=$(mktemp)
       lookup_status=$(curl -sS -o "$lookup_file" -w "%%{http_code}" \
         -X GET "$base_url/subkey/$GPD_PAYMENTS_SUB_KEY" \
-        -H "Ocp-Apim-Subscription-Key: $APIM_SUB_KEY")
+        -H "Ocp-Apim-Subscription-Key: $AUTHORIZER_SERVICE_SUBKEY")
 
       if [ "$lookup_status" = "404" ]; then
         echo "Old authorizer config already absent (lookup HTTP 404)"
@@ -176,33 +181,30 @@ resource "null_resource" "cleanup_authorizer_config" {
         exit 1
       fi
 
-      ids=$(jq -r '.authorizations[]?.id // empty' "$lookup_file")
+      auth_id=$(jq -r '.id // empty' "$lookup_file")
       rm -f "$lookup_file"
 
-      if [ -z "$ids" ]; then
-        echo "Old authorizer config already absent (empty authorizations)"
+      if [ -z "$auth_id" ]; then
+        echo "Old authorizer config already absent (no id in response)"
         exit 0
       fi
 
-      # 2) DELETE each authorization by id.
-      while IFS= read -r auth_id; do
-        [ -z "$auth_id" ] && continue
-        del_file=$(mktemp)
-        del_status=$(curl -sS -o "$del_file" -w "%%{http_code}" \
-          -X DELETE "$base_url/$auth_id" \
-          -H "Ocp-Apim-Subscription-Key: $APIM_SUB_KEY")
-        if [ "$del_status" = "200" ] || [ "$del_status" = "204" ] || [ "$del_status" = "404" ]; then
-          echo "Deleted authorization $auth_id (HTTP $del_status)"
-          rm -f "$del_file"
-          continue
-        fi
-        echo "Failed to delete authorization $auth_id: HTTP $del_status"
-        cat "$del_file"
-        rm -f "$del_file"
-        exit 1
-      done <<< "$ids"
+      # 2) DELETE the authorization by id.
+      del_file=$(mktemp)
+      del_status=$(curl -sS -o "$del_file" -w "%%{http_code}" \
+        -X DELETE "$base_url/$auth_id" \
+        -H "Ocp-Apim-Subscription-Key: $AUTHORIZER_SERVICE_SUBKEY")
 
-      echo "Old authorizer config cleanup OK"
+      if [ "$del_status" = "200" ] || [ "$del_status" = "204" ] || [ "$del_status" = "404" ]; then
+        echo "Deleted authorization $auth_id (HTTP $del_status)"
+        rm -f "$del_file"
+        exit 0
+      fi
+
+      echo "Failed to delete authorization $auth_id: HTTP $del_status"
+      cat "$del_file"
+      rm -f "$del_file"
+      exit 1
     EOT
   }
 }
