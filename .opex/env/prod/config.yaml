@@ -17,10 +17,14 @@ overrides:
   base_path: "/pagopa-mbd-service"
   endpoints:
     POST /v1/organizations/{organization-fiscal-code}/mbd:
-      response_time_threshold: 4
+      response_time_threshold: 5
+      availability_threshold: 0.95
     POST /v2/organizations/{organization-fiscal-code}/mbd:
-      response_time_threshold: 4
+      response_time_threshold: 5
+      availability_threshold: 0.95
     GET /v1/organizations/{organization-fiscal-code}/receipt/{nav}:
-      response_time_threshold: 3
+      response_time_threshold: 5
+      availability_threshold: 0.95
     GET /v2/organizations/{organization-fiscal-code}/noticeNumbers/{nav}/mbd:
-      response_time_threshold: 3
+      response_time_threshold: 5
+      availability_threshold: 0.95
