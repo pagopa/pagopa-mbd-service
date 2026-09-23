@@ -18,8 +18,6 @@ export default function () {
 
     let response = getReceipt(mbdServiceUri, fiscalCodeEC, nav);
 
-    console.log("Get MBD Receipt call, Status " + response.status);
-
     check(response, {
         'Get MBD Receipt status is 200': (response) => response.status === 200,
         'Get MDB Receipt content_type is the expected one':

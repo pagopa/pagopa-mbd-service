@@ -1,0 +1,11 @@
+{
+  "environment": [
+    {
+      "env": "uat",
+      "mbdServiceUri": "https://api.prf.platform.pagopa.it/pagopa-mbd-service/v2/organizations",
+      "fiscalCodeEC": "15376371009",
+      "nav": "352178971562115226",
+      "idCIService": "00005"
+    }
+  ]
+}

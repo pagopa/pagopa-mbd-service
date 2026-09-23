@@ -19,8 +19,6 @@ export default function () {
 
     let response = getMBD(mbdServiceUri, fiscalCodeEC, idCIService);
 
-    console.log("Post MBD call, Status " + response.status);
-
     check(response, {
         'Get MBD status is 200': (response) => response.status === 200,
         'Get MDB content_type is the expected one':
