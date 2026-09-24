@@ -4,7 +4,7 @@
     "description": "Marca da Bollo Digitale v2",
     "termsOfService": "https://www.pagopa.gov.it/",
     "title": "@e.bollo Service",
-    "version": "1.3.0-1-PAGOPA-3747-connectivity-test-dev"
+    "version": "1.3.1"
   },
   "servers": [
     {
