@@ -13,7 +13,7 @@ import it.gov.pagopa.mbd.service.exception.WebClientException;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
 import it.gov.pagopa.mbd.service.model.mdb.Debtor;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
-import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
+import it.gov.pagopa.mbd.service.model.mdb.CreateMbdRequestV2;
 import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
 import it.gov.pagopa.mbd.service.model.mdb.PaymentNotice;
 import it.gov.pagopa.mbd.service.model.mdb.PaymentNoticeV2;
@@ -159,7 +159,7 @@ class MdbServiceImplTest {
         GetCartResponse.builder().checkoutRedirectUrl("testUrl").build();
     when(reactiveClient.getCartV2(any())).thenAnswer(item -> Mono.just(getCartResponse));
 
-    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
+    CreateMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
     Mono<GetCartResponse> responseMono =
         assertDoesNotThrow(() -> mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest));
 
@@ -173,7 +173,7 @@ class MdbServiceImplTest {
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.error(new WebClientException("Error", null)));
 
-    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
+    CreateMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
     Mono<GetCartResponse> responseMono =
         assertDoesNotThrow(() -> mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest));
     AppException appException = assertThrows(AppException.class, responseMono::block);
@@ -189,7 +189,7 @@ class MdbServiceImplTest {
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
 
-    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
+    CreateMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
     Mono<GetCartResponse> responseMono =
         assertDoesNotThrow(() -> mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest));
     AppException appException = assertThrows(AppException.class, responseMono::block);
@@ -208,7 +208,7 @@ class MdbServiceImplTest {
     when(reactiveClient.getCartV2(any()))
         .thenAnswer(item -> Mono.error(new WebClientException("Error", null)));
 
-    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
+    CreateMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
     Mono<GetCartResponse> responseMono =
         assertDoesNotThrow(() -> mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest));
     AppException appException = assertThrows(AppException.class, responseMono::block);
@@ -227,7 +227,7 @@ class MdbServiceImplTest {
         GetCartResponse.builder().checkoutRedirectUrl("testUrl").build();
     when(reactiveClient.getCartV2(any())).thenAnswer(item -> Mono.just(getCartResponse));
 
-    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(false);
+    CreateMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(false);
     Mono<GetCartResponse> responseMono = mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest);
     assertThrows(ConstraintViolationException.class, responseMono::block);
   }
@@ -243,7 +243,7 @@ class MdbServiceImplTest {
         GetCartResponse.builder().checkoutRedirectUrl("testUrl").build();
     when(reactiveClient.getCartV2(any())).thenAnswer(item -> Mono.just(getCartResponse));
 
-    GetMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
+    CreateMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
     getMbdRequest.getPaymentNotices().get(0).getDebtor().getUniqueIdentifier().setValue("AAAAAAA");
     Mono<GetCartResponse> responseMono = mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest);
     assertThrows(ConstraintViolationException.class, responseMono::block);
@@ -326,8 +326,8 @@ class MdbServiceImplTest {
         .build();
   }
 
-  private GetMbdRequestV2 buildGetMbdRequestV2(boolean validDocumentHash) {
-    return GetMbdRequestV2.builder()
+  private CreateMbdRequestV2 buildGetMbdRequestV2(boolean validDocumentHash) {
+    return CreateMbdRequestV2.builder()
         .paymentNotices(
             Collections.singletonList(
                 PaymentNoticeV2.builder()

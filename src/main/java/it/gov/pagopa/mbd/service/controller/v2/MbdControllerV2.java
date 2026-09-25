@@ -13,7 +13,7 @@ import it.gov.pagopa.mbd.service.exception.AppException;
 import it.gov.pagopa.mbd.service.model.ProblemJson;
 import it.gov.pagopa.mbd.service.model.carts.GetCartErrorResponse;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
-import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
+import it.gov.pagopa.mbd.service.model.mdb.CreateMbdRequestV2;
 import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
 import it.gov.pagopa.mbd.service.service.MbdService;
 import it.gov.pagopa.mbd.service.util.ApiPaths;
@@ -56,8 +56,8 @@ public class MbdControllerV2 {
    *     retrieving Marca da Bollo
    */
   @Operation(
-      summary = "getMbdV2",
-      description = "Return mbd data for payment on requirement ",
+      summary = "createMbdV2",
+      description = "Create debt position with Marca da Bollo Digitale data for payment",
       security = {@SecurityRequirement(name = "ApiKey")})
   @ApiResponses(
       value = {
@@ -99,10 +99,10 @@ public class MbdControllerV2 {
                     schema = @Schema(implementation = GetCartErrorResponse.class)))
       })
   @PostMapping(value = ApiPaths.MBD_POST, produces = MediaType.APPLICATION_JSON_VALUE)
-  public Mono<ResponseEntity<?>> getMdbV2(
+  public Mono<ResponseEntity<?>> createMbdV2(
       @PathVariable("organization-fiscal-code") @Parameter(description = "Organization fiscal code")
           String organizationFiscalCode,
-      @RequestBody GetMbdRequestV2 request) {
+      @RequestBody CreateMbdRequestV2 request) {
     return mdbService
         .getMbdV2(organizationFiscalCode, request)
         .<ResponseEntity<?>>map(ResponseEntity::ok)

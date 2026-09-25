@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @Valid
-public class GetMbdRequestV2 {
+public class CreateMbdRequestV2 {
 
   @Size(min = 1, max = 1)
   @Valid

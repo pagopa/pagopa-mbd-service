@@ -10,7 +10,7 @@ import it.gov.pagopa.mbd.service.mapper.RequestMapper;
 import it.gov.pagopa.mbd.service.model.ProblemJson;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
 import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
-import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
+import it.gov.pagopa.mbd.service.model.mdb.CreateMbdRequestV2;
 import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
 import it.gov.pagopa.mbd.service.service.MbdService;
 import it.gov.pagopa.mbd.service.util.ApiPaths;
@@ -78,10 +78,10 @@ public class MbdServiceImpl implements MbdService {
             })
         .map(
             item -> {
-              GetMbdRequestV2 getMbdRequestV2 =
+              CreateMbdRequestV2 createMbdRequestV2 =
                   requestMapper.mapGetMbdRequestToGetMbdRequestV2(item);
               return requestMapper.mapDemandPaymentNoticeRequest(
-                  organizationFiscalCode, getMbdRequestV2);
+                  organizationFiscalCode, createMbdRequestV2);
             })
         .onErrorMap(
             XmlMappingException.class,
@@ -133,12 +133,12 @@ public class MbdServiceImpl implements MbdService {
 
   /** {@inheritDoc} */
   @Override
-  public Mono<GetCartResponse> getMbdV2(String organizationFiscalCode, GetMbdRequestV2 request) {
+  public Mono<GetCartResponse> getMbdV2(String organizationFiscalCode, CreateMbdRequestV2 request) {
     HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap<>();
     return Mono.just(request)
         .doFirst(
             () -> {
-              Set<ConstraintViolation<GetMbdRequestV2>> errors = validator.validate(request);
+              Set<ConstraintViolation<CreateMbdRequestV2>> errors = validator.validate(request);
               if (!errors.isEmpty()) {
                 throw new ConstraintViolationException(errors);
               }
