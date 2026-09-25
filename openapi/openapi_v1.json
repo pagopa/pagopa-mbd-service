@@ -303,7 +303,7 @@
         "properties": {
           "idCIService": {
             "type": "string",
-            "description": "Identifier of the association between the organization and MDB payment service.",
+            "description": "Identifier of the association between the organization and MBD payment service.",
             "example": "04"
           },
           "paymentNotices": {

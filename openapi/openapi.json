@@ -496,8 +496,8 @@
         }
       ],
       "post": {
-        "description": "Return mbd data for payment on requirement ",
-        "operationId": "getMdbV2",
+        "description": "Create debt position with Marca da Bollo Digitale data for payment",
+        "operationId": "createMbdV2",
         "parameters": [
           {
             "description": "Organization fiscal code",
@@ -513,7 +513,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/GetMbdRequestV2"
+                "$ref": "#/components/schemas/CreateMbdRequestV2"
               }
             }
           },
@@ -618,7 +618,7 @@
             "ApiKey": []
           }
         ],
-        "summary": "getMbdV2",
+        "summary": "createMbdV2",
         "tags": [
           "MBD - v2"
         ]
@@ -803,6 +803,25 @@
           }
         }
       },
+      "CreateMbdRequestV2": {
+        "required": [
+          "returnUrls"
+        ],
+        "type": "object",
+        "properties": {
+          "paymentNotices": {
+            "maxItems": 1,
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PaymentNoticeV2"
+            }
+          },
+          "returnUrls": {
+            "$ref": "#/components/schemas/ReturnUrlsV2"
+          }
+        }
+      },
       "Debtor": {
         "required": [
           "email",
@@ -864,7 +883,7 @@
         "properties": {
           "idCIService": {
             "type": "string",
-            "description": "Identifier of the association between the organization and MDB payment service.",
+            "description": "Identifier of the association between the organization and MBD payment service.",
             "example": "04"
           },
           "paymentNotices": {
@@ -877,25 +896,6 @@
           },
           "returnUrls": {
             "$ref": "#/components/schemas/ReturnUrls"
-          }
-        }
-      },
-      "GetMbdRequestV2": {
-        "required": [
-          "returnUrls"
-        ],
-        "type": "object",
-        "properties": {
-          "paymentNotices": {
-            "maxItems": 1,
-            "minItems": 1,
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/PaymentNoticeV2"
-            }
-          },
-          "returnUrls": {
-            "$ref": "#/components/schemas/ReturnUrlsV2"
           }
         }
       },
