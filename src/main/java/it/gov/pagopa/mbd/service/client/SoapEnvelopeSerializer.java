@@ -21,7 +21,7 @@ public class SoapEnvelopeSerializer {
   private static final ObjectFactory SOAP_OBJECT_FACTORY = new ObjectFactory();
   private static final it.gov.pagopa.pagopa_api.node.nodeforpsp.ObjectFactory NODE_OBJECT_FACTORY =
       new it.gov.pagopa.pagopa_api.node.nodeforpsp.ObjectFactory();
-  private static final it.gov.pagopa.pagopa_api.pa.marcadabollo.ObjectFactory MDB_OBJECT_FACTORY =
+  private static final it.gov.pagopa.pagopa_api.pa.marcadabollo.ObjectFactory MBD_OBJECT_FACTORY =
       new it.gov.pagopa.pagopa_api.pa.marcadabollo.ObjectFactory();
 
   private final Jaxb2Marshaller jaxb2Marshaller;
@@ -50,7 +50,7 @@ public class SoapEnvelopeSerializer {
 
   /** Marshals a {@link TipoMarcaDaBollo} to its XML string representation. */
   public String marshalMarcaDaBollo(TipoMarcaDaBollo marcaDaBollo) {
-    JAXBElement<TipoMarcaDaBollo> element = MDB_OBJECT_FACTORY.createMarcaDaBollo(marcaDaBollo);
+    JAXBElement<TipoMarcaDaBollo> element = MBD_OBJECT_FACTORY.createMarcaDaBollo(marcaDaBollo);
     return marshalToString(element);
   }
 

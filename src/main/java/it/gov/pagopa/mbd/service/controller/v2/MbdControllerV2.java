@@ -13,8 +13,8 @@ import it.gov.pagopa.mbd.service.exception.AppException;
 import it.gov.pagopa.mbd.service.model.ProblemJson;
 import it.gov.pagopa.mbd.service.model.carts.GetCartErrorResponse;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
-import it.gov.pagopa.mbd.service.model.mdb.CreateMbdRequestV2;
-import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
+import it.gov.pagopa.mbd.service.model.mbd.CreateMbdRequestV2;
+import it.gov.pagopa.mbd.service.model.mbd.GetMdbReceipt;
 import it.gov.pagopa.mbd.service.service.MbdService;
 import it.gov.pagopa.mbd.service.util.ApiPaths;
 import it.gov.pagopa.mbd.service.util.OpenAPIDocumentationConstants;
@@ -104,7 +104,7 @@ public class MbdControllerV2 {
           String organizationFiscalCode,
       @RequestBody CreateMbdRequestV2 request) {
     return mdbService
-        .getMbdV2(organizationFiscalCode, request)
+        .createMbdV2(organizationFiscalCode, request)
         .<ResponseEntity<?>>map(ResponseEntity::ok)
         .onErrorResume(
             e -> {

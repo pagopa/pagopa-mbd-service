@@ -11,15 +11,15 @@ import it.gov.pagopa.mbd.service.exception.AppError;
 import it.gov.pagopa.mbd.service.exception.AppException;
 import it.gov.pagopa.mbd.service.exception.WebClientException;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
-import it.gov.pagopa.mbd.service.model.mdb.Debtor;
-import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
-import it.gov.pagopa.mbd.service.model.mdb.CreateMbdRequestV2;
-import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
-import it.gov.pagopa.mbd.service.model.mdb.PaymentNotice;
-import it.gov.pagopa.mbd.service.model.mdb.PaymentNoticeV2;
-import it.gov.pagopa.mbd.service.model.mdb.ReturnUrls;
-import it.gov.pagopa.mbd.service.model.mdb.ReturnUrlsV2;
-import it.gov.pagopa.mbd.service.model.mdb.UniqueIdentifier;
+import it.gov.pagopa.mbd.service.model.mbd.CreateMbdRequestV2;
+import it.gov.pagopa.mbd.service.model.mbd.Debtor;
+import it.gov.pagopa.mbd.service.model.mbd.GetMbdRequest;
+import it.gov.pagopa.mbd.service.model.mbd.GetMdbReceipt;
+import it.gov.pagopa.mbd.service.model.mbd.PaymentNotice;
+import it.gov.pagopa.mbd.service.model.mbd.PaymentNoticeV2;
+import it.gov.pagopa.mbd.service.model.mbd.ReturnUrls;
+import it.gov.pagopa.mbd.service.model.mbd.ReturnUrlsV2;
+import it.gov.pagopa.mbd.service.model.mbd.UniqueIdentifier;
 import it.gov.pagopa.mbd.service.service.MbdService;
 import it.gov.pagopa.pagopa_api.node.nodeforpsp.CtPaymentOptionDescription;
 import it.gov.pagopa.pagopa_api.node.nodeforpsp.CtPaymentOptionsDescriptionList;
@@ -51,7 +51,7 @@ class MdbServiceImplTest {
   @Inject private MbdService mbdService;
 
   @Test
-  void getMdb_OK() throws DatatypeConfigurationException {
+  void createMbd_OK() throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
@@ -62,7 +62,7 @@ class MdbServiceImplTest {
 
     GetMbdRequest getMbdRequest = buildGetMbdRequest(true);
     Mono<GetCartResponse> responseMono =
-        assertDoesNotThrow(() -> mbdService.getMbd(FISCAL_CODE_EC, getMbdRequest));
+        assertDoesNotThrow(() -> mbdService.createMbd(FISCAL_CODE_EC, getMbdRequest));
 
     GetCartResponse response = responseMono.block();
     assertNotNull(response);
@@ -70,13 +70,13 @@ class MdbServiceImplTest {
   }
 
   @Test
-  void getMdb_KO_ClientErrorOnDemand() {
+  void createMbd_KO_ClientErrorOnDemand() {
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.error(new WebClientException("Error", null)));
 
     GetMbdRequest getMbdRequest = buildGetMbdRequest(true);
     Mono<GetCartResponse> responseMono =
-        assertDoesNotThrow(() -> mbdService.getMbd(FISCAL_CODE_EC, getMbdRequest));
+        assertDoesNotThrow(() -> mbdService.createMbd(FISCAL_CODE_EC, getMbdRequest));
     AppException appException = assertThrows(AppException.class, responseMono::block);
     assertNotNull(appException);
     assertEquals(AppError.PAYMENT_NOTICE_REQUEST_CALL_ERROR.title, appException.getTitle());
@@ -85,14 +85,14 @@ class MdbServiceImplTest {
   }
 
   @Test
-  void getMdb_KO_ErrorMappingDemandResponseToCartRequest() {
+  void createMbd_KO_ErrorMappingDemandResponseToCartRequest() {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildInvalidDemandResponse();
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
 
     GetMbdRequest getMbdRequest = buildGetMbdRequest(true);
     Mono<GetCartResponse> responseMono =
-        assertDoesNotThrow(() -> mbdService.getMbd(FISCAL_CODE_EC, getMbdRequest));
+        assertDoesNotThrow(() -> mbdService.createMbd(FISCAL_CODE_EC, getMbdRequest));
     AppException appException = assertThrows(AppException.class, responseMono::block);
     assertNotNull(appException);
     assertEquals(AppError.CART_REQUEST_MAP_ERROR.title, appException.getTitle());
@@ -101,7 +101,7 @@ class MdbServiceImplTest {
   }
 
   @Test
-  void getMdb_KO_ClientErrorOnGetCart() throws DatatypeConfigurationException {
+  void createMbd_KO_ClientErrorOnGetCart() throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
@@ -111,14 +111,14 @@ class MdbServiceImplTest {
 
     GetMbdRequest getMbdRequest = buildGetMbdRequest(true);
     Mono<GetCartResponse> responseMono =
-        assertDoesNotThrow(() -> mbdService.getMbd(FISCAL_CODE_EC, getMbdRequest));
+        assertDoesNotThrow(() -> mbdService.createMbd(FISCAL_CODE_EC, getMbdRequest));
     AppException appException = assertThrows(AppException.class, responseMono::block);
     assertNotNull(appException);
     assertEquals(AppError.CART_REQUEST_CALL_ERROR.title, appException.getTitle());
   }
 
   @Test
-  void getMdb_KO_RequestValidationError_WrongDocumentHash()
+  void createMbd_KO_RequestValidationError_WrongDocumentHash()
       throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
     when(reactiveClient.demandPaymentNotice(any()))
@@ -129,12 +129,12 @@ class MdbServiceImplTest {
     when(reactiveClient.getCart(any())).thenAnswer(item -> Mono.just(getCartResponse));
 
     GetMbdRequest getMbdRequest = buildGetMbdRequest(false);
-    Mono<GetCartResponse> responseMono = mbdService.getMbd(FISCAL_CODE_EC, getMbdRequest);
+    Mono<GetCartResponse> responseMono = mbdService.createMbd(FISCAL_CODE_EC, getMbdRequest);
     assertThrows(ConstraintViolationException.class, responseMono::block);
   }
 
   @Test
-  void getMdb_KO_RequestValidationError_InvalidFiscalCode() throws DatatypeConfigurationException {
+  void createMbd_KO_RequestValidationError_InvalidFiscalCode() throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
@@ -145,12 +145,12 @@ class MdbServiceImplTest {
 
     GetMbdRequest getMbdRequest = buildGetMbdRequest(true);
     getMbdRequest.getPaymentNotices().get(0).setFiscalCode("AAAAAAA");
-    Mono<GetCartResponse> responseMono = mbdService.getMbd(FISCAL_CODE_EC, getMbdRequest);
+    Mono<GetCartResponse> responseMono = mbdService.createMbd(FISCAL_CODE_EC, getMbdRequest);
     assertThrows(ConstraintViolationException.class, responseMono::block);
   }
 
   @Test
-  void getMdbV2_OK() throws DatatypeConfigurationException {
+  void createMbdV2_OK() throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
@@ -161,7 +161,7 @@ class MdbServiceImplTest {
 
     CreateMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
     Mono<GetCartResponse> responseMono =
-        assertDoesNotThrow(() -> mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest));
+        assertDoesNotThrow(() -> mbdService.createMbdV2(FISCAL_CODE_EC, getMbdRequest));
 
     GetCartResponse response = responseMono.block();
     assertNotNull(response);
@@ -169,13 +169,13 @@ class MdbServiceImplTest {
   }
 
   @Test
-  void getMdbV2_KO_ClientErrorOnDemand() {
+  void createMbdV2_KO_ClientErrorOnDemand() {
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.error(new WebClientException("Error", null)));
 
     CreateMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
     Mono<GetCartResponse> responseMono =
-        assertDoesNotThrow(() -> mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest));
+        assertDoesNotThrow(() -> mbdService.createMbdV2(FISCAL_CODE_EC, getMbdRequest));
     AppException appException = assertThrows(AppException.class, responseMono::block);
     assertNotNull(appException);
     assertEquals(AppError.PAYMENT_NOTICE_REQUEST_CALL_ERROR.title, appException.getTitle());
@@ -184,14 +184,14 @@ class MdbServiceImplTest {
   }
 
   @Test
-  void getMdbV2_KO_ErrorMappingDemandResponseToCartRequest() {
+  void createMbdV2_KO_ErrorMappingDemandResponseToCartRequest() {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildInvalidDemandResponse();
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
 
     CreateMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
     Mono<GetCartResponse> responseMono =
-        assertDoesNotThrow(() -> mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest));
+        assertDoesNotThrow(() -> mbdService.createMbdV2(FISCAL_CODE_EC, getMbdRequest));
     AppException appException = assertThrows(AppException.class, responseMono::block);
     assertNotNull(appException);
     assertEquals(AppError.CART_REQUEST_MAP_ERROR.title, appException.getTitle());
@@ -200,7 +200,7 @@ class MdbServiceImplTest {
   }
 
   @Test
-  void getMdbV2_KO_ClientErrorOnGetCart() throws DatatypeConfigurationException {
+  void createMbdV2_KO_ClientErrorOnGetCart() throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));
@@ -210,14 +210,14 @@ class MdbServiceImplTest {
 
     CreateMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
     Mono<GetCartResponse> responseMono =
-        assertDoesNotThrow(() -> mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest));
+        assertDoesNotThrow(() -> mbdService.createMbdV2(FISCAL_CODE_EC, getMbdRequest));
     AppException appException = assertThrows(AppException.class, responseMono::block);
     assertNotNull(appException);
     assertEquals(AppError.CART_REQUEST_CALL_ERROR.title, appException.getTitle());
   }
 
   @Test
-  void getMdbV2_KO_RequestValidationError_WrongDocumentHash()
+  void createMbdV2_KO_RequestValidationError_WrongDocumentHash()
       throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
     when(reactiveClient.demandPaymentNotice(any()))
@@ -228,12 +228,12 @@ class MdbServiceImplTest {
     when(reactiveClient.getCartV2(any())).thenAnswer(item -> Mono.just(getCartResponse));
 
     CreateMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(false);
-    Mono<GetCartResponse> responseMono = mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest);
+    Mono<GetCartResponse> responseMono = mbdService.createMbdV2(FISCAL_CODE_EC, getMbdRequest);
     assertThrows(ConstraintViolationException.class, responseMono::block);
   }
 
   @Test
-  void getMdbV2_KO_RequestValidationError_InvalidFiscalCode()
+  void createMbdV2_KO_RequestValidationError_InvalidFiscalCode()
       throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
     when(reactiveClient.demandPaymentNotice(any()))
@@ -245,7 +245,7 @@ class MdbServiceImplTest {
 
     CreateMbdRequestV2 getMbdRequest = buildGetMbdRequestV2(true);
     getMbdRequest.getPaymentNotices().get(0).getDebtor().getUniqueIdentifier().setValue("AAAAAAA");
-    Mono<GetCartResponse> responseMono = mbdService.getMbdV2(FISCAL_CODE_EC, getMbdRequest);
+    Mono<GetCartResponse> responseMono = mbdService.createMbdV2(FISCAL_CODE_EC, getMbdRequest);
     assertThrows(ConstraintViolationException.class, responseMono::block);
   }
 

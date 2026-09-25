@@ -1,9 +1,9 @@
 package it.gov.pagopa.mbd.service.service;
 
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
-import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
-import it.gov.pagopa.mbd.service.model.mdb.CreateMbdRequestV2;
-import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
+import it.gov.pagopa.mbd.service.model.mbd.CreateMbdRequestV2;
+import it.gov.pagopa.mbd.service.model.mbd.GetMbdRequest;
+import it.gov.pagopa.mbd.service.model.mbd.GetMdbReceipt;
 import reactor.core.publisher.Mono;
 
 /** Service for Marca da Bollo business logic */
@@ -17,7 +17,7 @@ public interface MbdService {
    * @return a Mono of {@link GetCartResponse} containing the redirect url for payment and the
    *     redirect url for retrieving Marca da Bollo
    */
-  Mono<GetCartResponse> getMbd(String organizationFiscalCode, GetMbdRequest request);
+  Mono<GetCartResponse> createMbd(String organizationFiscalCode, GetMbdRequest request);
 
   /**
    * Creates the debt position and pays the Marca da Bollo for the provided document hash
@@ -27,7 +27,7 @@ public interface MbdService {
    * @return a Mono of {@link GetCartResponse} containing the redirect url for payment and the
    *     redirect url for retrieving Marca da Bollo
    */
-  Mono<GetCartResponse> getMbdV2(String organizationFiscalCode, CreateMbdRequestV2 request);
+  Mono<GetCartResponse> createMbdV2(String organizationFiscalCode, CreateMbdRequestV2 request);
 
   /**
    * Retrieves the Marca da Bollo receipts for the provided fiscal code and nav

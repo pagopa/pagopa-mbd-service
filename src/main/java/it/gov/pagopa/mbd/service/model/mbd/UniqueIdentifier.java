@@ -1,4 +1,4 @@
-package it.gov.pagopa.mbd.service.model.mdb;
+package it.gov.pagopa.mbd.service.model.mbd;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;

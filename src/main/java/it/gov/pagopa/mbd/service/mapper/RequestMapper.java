@@ -10,13 +10,13 @@ import it.gov.pagopa.mbd.service.model.carts.CartReturnUrls;
 import it.gov.pagopa.mbd.service.model.carts.CartReturnUrlsV2;
 import it.gov.pagopa.mbd.service.model.carts.GetCartRequest;
 import it.gov.pagopa.mbd.service.model.carts.GetCartRequestV2;
-import it.gov.pagopa.mbd.service.model.mdb.Debtor;
-import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
-import it.gov.pagopa.mbd.service.model.mdb.CreateMbdRequestV2;
-import it.gov.pagopa.mbd.service.model.mdb.PaymentNotice;
-import it.gov.pagopa.mbd.service.model.mdb.PaymentNoticeV2;
-import it.gov.pagopa.mbd.service.model.mdb.ReturnUrlsV2;
-import it.gov.pagopa.mbd.service.model.mdb.UniqueIdentifier;
+import it.gov.pagopa.mbd.service.model.mbd.CreateMbdRequestV2;
+import it.gov.pagopa.mbd.service.model.mbd.Debtor;
+import it.gov.pagopa.mbd.service.model.mbd.GetMbdRequest;
+import it.gov.pagopa.mbd.service.model.mbd.PaymentNotice;
+import it.gov.pagopa.mbd.service.model.mbd.PaymentNoticeV2;
+import it.gov.pagopa.mbd.service.model.mbd.ReturnUrlsV2;
+import it.gov.pagopa.mbd.service.model.mbd.UniqueIdentifier;
 import it.gov.pagopa.mbd.service.util.Constants;
 import it.gov.pagopa.pagopa_api.node.nodeforpsp.CtPaymentOptionDescription;
 import it.gov.pagopa.pagopa_api.node.nodeforpsp.CtPaymentOptionsDescriptionList;
@@ -65,9 +65,9 @@ public class RequestMapper {
 
   /**
    * Builds the {@link DemandPaymentNoticeRequest} payload for the Nodo {@code demandPaymentNotice}
-   * SOAP operation, starting from the incoming application-level {@link CreateMbdRequestV2}. Populates
-   * PSP identifiers from configuration and marshals the {@link TipoMarcaDaBollo} service data into
-   * the {@code datiSpecificiServizio} field.
+   * SOAP operation, starting from the incoming application-level {@link CreateMbdRequestV2}.
+   * Populates PSP identifiers from configuration and marshals the {@link TipoMarcaDaBollo} service
+   * data into the {@code datiSpecificiServizio} field.
    *
    * @param organizationFiscalCode fiscal code of the creditor organization (PA)
    * @param mdbRequest incoming Marca da Bollo request in its V2 shape
@@ -157,8 +157,8 @@ public class RequestMapper {
   }
 
   /**
-   * Builds the Checkout v2 {@link GetCartRequestV2} starting from the {@link CreateMbdRequestV2} and
-   * the response received from the Nodo {@code demandPaymentNotice} call. Ensures that all
+   * Builds the Checkout v2 {@link GetCartRequestV2} starting from the {@link CreateMbdRequestV2}
+   * and the response received from the Nodo {@code demandPaymentNotice} call. Ensures that all
    * mandatory fields (payment options, QR code) are present in the response.
    *
    * @param request original Marca da Bollo request (v2)
@@ -168,7 +168,7 @@ public class RequestMapper {
    *     fails
    */
   public GetCartRequestV2 mapCartV2Request(
-          CreateMbdRequestV2 request, DemandPaymentNoticeResponse demandPaymentNoticeResponse) {
+      CreateMbdRequestV2 request, DemandPaymentNoticeResponse demandPaymentNoticeResponse) {
     try {
       assertNotNull(demandPaymentNoticeResponse);
       CtPaymentOptionsDescriptionList ctPaymentOptionsDescriptionList =

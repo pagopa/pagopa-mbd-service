@@ -1,4 +1,4 @@
-package it.gov.pagopa.mbd.service.model.mdb;
+package it.gov.pagopa.mbd.service.model.mbd;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;

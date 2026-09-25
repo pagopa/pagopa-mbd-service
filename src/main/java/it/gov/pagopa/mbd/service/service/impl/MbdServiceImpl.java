@@ -9,9 +9,9 @@ import it.gov.pagopa.mbd.service.exception.WebClientException;
 import it.gov.pagopa.mbd.service.mapper.RequestMapper;
 import it.gov.pagopa.mbd.service.model.ProblemJson;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
-import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
-import it.gov.pagopa.mbd.service.model.mdb.CreateMbdRequestV2;
-import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
+import it.gov.pagopa.mbd.service.model.mbd.CreateMbdRequestV2;
+import it.gov.pagopa.mbd.service.model.mbd.GetMbdRequest;
+import it.gov.pagopa.mbd.service.model.mbd.GetMdbReceipt;
 import it.gov.pagopa.mbd.service.service.MbdService;
 import it.gov.pagopa.mbd.service.util.ApiPaths;
 import it.gov.pagopa.pagopa_api.node.nodeforpsp.DemandPaymentNoticeResponse;
@@ -40,7 +40,7 @@ public class MbdServiceImpl implements MbdService {
   private final Validator validator;
   private final ReactiveClient reactiveSoapClient;
   private final RequestMapper requestMapper;
-  private final String mdbLinkBaseUrl;
+  private final String mbdLinkBaseUrl;
   private final ObjectMapper objectMapper;
 
   @Autowired
@@ -49,17 +49,17 @@ public class MbdServiceImpl implements MbdService {
       ReactiveClient reactiveSoapClient,
       RequestMapper requestMapper,
       ObjectMapper objectMapper,
-      @Value("${mbd.link.baseUrl}") String mdbLinkBaseUrl) {
+      @Value("${mbd.link.baseUrl}") String mbdLinkBaseUrl) {
     this.validator = validator;
     this.reactiveSoapClient = reactiveSoapClient;
     this.requestMapper = requestMapper;
     this.objectMapper = objectMapper;
-    this.mdbLinkBaseUrl = mdbLinkBaseUrl;
+    this.mbdLinkBaseUrl = mbdLinkBaseUrl;
   }
 
   /** {@inheritDoc} */
   @Override
-  public Mono<GetCartResponse> getMbd(String organizationFiscalCode, GetMbdRequest request) {
+  public Mono<GetCartResponse> createMbd(String organizationFiscalCode, GetMbdRequest request) {
     HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap<>();
     return Mono.just(request)
         .doFirst(
@@ -133,7 +133,7 @@ public class MbdServiceImpl implements MbdService {
 
   /** {@inheritDoc} */
   @Override
-  public Mono<GetCartResponse> getMbdV2(String organizationFiscalCode, CreateMbdRequestV2 request) {
+  public Mono<GetCartResponse> createMbdV2(String organizationFiscalCode, CreateMbdRequestV2 request) {
     HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap<>();
     return Mono.just(request)
         .doFirst(
@@ -237,7 +237,7 @@ public class MbdServiceImpl implements MbdService {
    */
   private String buildMbdDownloadLink(
       String pathTemplate, String organizationFiscalCode, String noticeNumber) {
-    return UriComponentsBuilder.fromUriString(mdbLinkBaseUrl)
+    return UriComponentsBuilder.fromUriString(mbdLinkBaseUrl)
         .path(pathTemplate)
         .buildAndExpand(
             Map.of(
