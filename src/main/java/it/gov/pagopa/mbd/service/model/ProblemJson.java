@@ -3,6 +3,7 @@ package it.gov.pagopa.mbd.service.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import it.gov.pagopa.mbd.service.exception.ErrorHandler;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
@@ -14,7 +15,7 @@ import lombok.ToString;
 /**
  * Object returned as response in case of an error.
  *
- * <p>See {@link it.gov.pagopa.mbd.service.exception.ErrorHandler}
+ * <p>See {@link ErrorHandler}
  */
 @Data
 @Builder(toBuilder = true)

@@ -1,4 +1,4 @@
-package it.gov.pagopa.mbd.service.model.mdb;
+package it.gov.pagopa.mbd.service.model.mbd;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 @Valid
-public class GetMbdRequestV2 {
+public class CreateMbdRequestV2 {
 
   @Size(min = 1, max = 1)
   @Valid
