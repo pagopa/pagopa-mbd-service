@@ -12,11 +12,13 @@ public interface MbdService {
   /**
    * Creates the debt position and pays the Marca da Bollo for the provided document hash
    *
+   * @deprecated Use {@link MbdService#createMbdV2(String, CreateMbdRequestV2)} instead
    * @param organizationFiscalCode organization fiscal code
    * @param request data to create the debt position and pay the Marca da Bollo
    * @return a Mono of {@link GetCartResponse} containing the redirect url for payment and the
    *     redirect url for retrieving Marca da Bollo
    */
+  @Deprecated
   Mono<GetCartResponse> createMbd(String organizationFiscalCode, GetMbdRequest request);
 
   /**

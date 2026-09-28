@@ -50,12 +50,13 @@ public class MbdControllerV1 {
   }
 
   /**
+   * Request to pay Marca da Bollo Digitale for the provided document hash
+   *
+   * @deprecated Use {@link MbdControllerV2#createMbdV2(String, CreateMbdRequestV2)} instead
    * @param organizationFiscalCode organization fiscal code
    * @param request request data to create the debt position and pay the Marca da Bollo
    * @return ResponseEntity containing the redirect url for payment and the redirect url for
    *     retrieving Marca da Bollo
-   * @deprecated Use {@link MbdControllerV2#createMbdV2(String, CreateMbdRequestV2)} instead
-   *     <p>Request to pay Marca da Bollo Digitale for the provided document
    */
   @Operation(
       summary = "getMbd",
@@ -135,12 +136,13 @@ public class MbdControllerV1 {
   }
 
   /**
+   * Request to retrieve the Marca da Bollo receipts for the provided organization fiscal code and
+   * nav
+   *
+   * @deprecated Use {@link MbdControllerV2#getPaymentReceiptsV2(String, String)} instead
    * @param organizationFiscalCode organization fiscal code
    * @param nav notice number
    * @return ResponseEntity containing the Marca da Bollo Digitale
-   * @deprecated Use {@link MbdControllerV2#getPaymentReceiptsV2(String, String)} instead
-   *     <p>Request to retrieve the Marca da Bollo receipts for the provided organization fiscal
-   *     code and nav
    */
   @Operation(
       summary = "getPaymentReceipt",
