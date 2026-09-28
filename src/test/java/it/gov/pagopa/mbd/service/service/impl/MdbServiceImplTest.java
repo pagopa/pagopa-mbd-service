@@ -134,7 +134,8 @@ class MdbServiceImplTest {
   }
 
   @Test
-  void createMbd_KO_RequestValidationError_InvalidFiscalCode() throws DatatypeConfigurationException {
+  void createMbd_KO_RequestValidationError_InvalidFiscalCode()
+      throws DatatypeConfigurationException {
     DemandPaymentNoticeResponse demandPaymentNoticeResponse = buildDemandResponse();
     when(reactiveClient.demandPaymentNotice(any()))
         .thenAnswer(item -> Mono.just(demandPaymentNoticeResponse));

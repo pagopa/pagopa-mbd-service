@@ -133,7 +133,8 @@ public class MbdServiceImpl implements MbdService {
 
   /** {@inheritDoc} */
   @Override
-  public Mono<GetCartResponse> createMbdV2(String organizationFiscalCode, CreateMbdRequestV2 request) {
+  public Mono<GetCartResponse> createMbdV2(
+      String organizationFiscalCode, CreateMbdRequestV2 request) {
     HashMap<String, DemandPaymentNoticeResponse> hashMap = new HashMap<>();
     return Mono.just(request)
         .doFirst(
