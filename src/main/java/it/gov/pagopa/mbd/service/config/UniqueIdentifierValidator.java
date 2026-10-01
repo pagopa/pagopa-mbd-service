@@ -1,6 +1,6 @@
 package it.gov.pagopa.mbd.service.config;
 
-import it.gov.pagopa.mbd.service.model.mdb.UniqueIdentifier;
+import it.gov.pagopa.mbd.service.model.mbd.UniqueIdentifier;
 import it.gov.pagopa.mbd.service.util.Constants;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;

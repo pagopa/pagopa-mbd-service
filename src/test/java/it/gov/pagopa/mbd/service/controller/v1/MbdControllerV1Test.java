@@ -10,10 +10,10 @@ import it.gov.pagopa.mbd.service.exception.AppException;
 import it.gov.pagopa.mbd.service.model.ProblemJson;
 import it.gov.pagopa.mbd.service.model.carts.GetCartErrorResponse;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
-import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
-import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
-import it.gov.pagopa.mbd.service.model.mdb.PaymentNotice;
-import it.gov.pagopa.mbd.service.model.mdb.ReturnUrls;
+import it.gov.pagopa.mbd.service.model.mbd.GetMbdRequest;
+import it.gov.pagopa.mbd.service.model.mbd.GetMdbReceipt;
+import it.gov.pagopa.mbd.service.model.mbd.PaymentNotice;
+import it.gov.pagopa.mbd.service.model.mbd.ReturnUrls;
 import it.gov.pagopa.mbd.service.service.MbdService;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolationException;
@@ -48,7 +48,7 @@ class MbdControllerV1Test {
 
   @Test
   void getMdb_OK_ShouldReturnCheckoutUrl() throws Exception {
-    when(mbdService.getMbd(any(), any()))
+    when(mbdService.createMbd(any(), any()))
         .thenAnswer(
             item -> Mono.just(GetCartResponse.builder().checkoutRedirectUrl(TEST_URL).build()));
     webClient
@@ -77,7 +77,8 @@ class MbdControllerV1Test {
 
   @Test
   void getMdb_KO_ShouldReturnErrorUrl_GenericException() throws Exception {
-    when(mbdService.getMbd(any(), any())).thenAnswer(item -> Mono.error(new RuntimeException("")));
+    when(mbdService.createMbd(any(), any()))
+        .thenAnswer(item -> Mono.error(new RuntimeException("")));
     webClient
         .post()
         .uri("/v1/organizations/test/mbd")
@@ -104,7 +105,7 @@ class MbdControllerV1Test {
 
   @Test
   void getMdb_KO_ShouldReturnErrorUrl_ConstraintViolationException() throws Exception {
-    when(mbdService.getMbd(any(), any()))
+    when(mbdService.createMbd(any(), any()))
         .thenAnswer(item -> Mono.error(new ConstraintViolationException(Collections.emptySet())));
     webClient
         .post()
@@ -131,7 +132,7 @@ class MbdControllerV1Test {
 
   @Test
   void getMdb_KO_ShouldReturnErrorUrl_AppException() throws Exception {
-    when(mbdService.getMbd(any(), any()))
+    when(mbdService.createMbd(any(), any()))
         .thenAnswer(item -> Mono.error(new AppException(AppError.CART_REQUEST_CALL_ERROR)));
     webClient
         .post()

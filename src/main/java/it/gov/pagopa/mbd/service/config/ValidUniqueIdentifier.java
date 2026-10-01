@@ -1,7 +1,7 @@
 package it.gov.pagopa.mbd.service.config;
 
-import it.gov.pagopa.mbd.service.model.mdb.UniqueIdentifier;
-import it.gov.pagopa.mbd.service.model.mdb.UniqueIdentifier.UniqueIdentifierType;
+import it.gov.pagopa.mbd.service.model.mbd.UniqueIdentifier;
+import it.gov.pagopa.mbd.service.model.mbd.UniqueIdentifier.UniqueIdentifierType;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 import java.lang.annotation.*;

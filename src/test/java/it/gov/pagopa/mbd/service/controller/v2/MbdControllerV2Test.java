@@ -10,10 +10,10 @@ import it.gov.pagopa.mbd.service.exception.AppException;
 import it.gov.pagopa.mbd.service.model.ProblemJson;
 import it.gov.pagopa.mbd.service.model.carts.GetCartErrorResponse;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
-import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
-import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
-import it.gov.pagopa.mbd.service.model.mdb.PaymentNoticeV2;
-import it.gov.pagopa.mbd.service.model.mdb.ReturnUrlsV2;
+import it.gov.pagopa.mbd.service.model.mbd.CreateMbdRequestV2;
+import it.gov.pagopa.mbd.service.model.mbd.GetMdbReceipt;
+import it.gov.pagopa.mbd.service.model.mbd.PaymentNoticeV2;
+import it.gov.pagopa.mbd.service.model.mbd.ReturnUrlsV2;
 import it.gov.pagopa.mbd.service.service.MbdService;
 import jakarta.inject.Inject;
 import jakarta.validation.ConstraintViolationException;
@@ -47,8 +47,8 @@ class MbdControllerV2Test {
   @Inject ObjectMapper objectMapper;
 
   @Test
-  void getMdbV2_OK_ShouldReturnCheckoutUrl() throws Exception {
-    when(mbdService.getMbdV2(any(), any()))
+  void createMbdV2_OK_ShouldReturnCheckoutUrl() throws Exception {
+    when(mbdService.createMbdV2(any(), any()))
         .thenAnswer(
             item -> Mono.just(GetCartResponse.builder().checkoutRedirectUrl(TEST_URL).build()));
     webClient
@@ -56,7 +56,7 @@ class MbdControllerV2Test {
         .uri("/v2/organizations/test/mbd")
         .bodyValue(
             objectMapper.writeValueAsBytes(
-                GetMbdRequestV2.builder()
+                CreateMbdRequestV2.builder()
                     .paymentNotices(Collections.singletonList(PaymentNoticeV2.builder().build()))
                     .returnUrls(ReturnUrlsV2.builder().build())
                     .build()))
@@ -75,15 +75,15 @@ class MbdControllerV2Test {
   }
 
   @Test
-  void getMdbV2_KO_ShouldReturnErrorUrl_GenericException() throws Exception {
-    when(mbdService.getMbdV2(any(), any()))
+  void createMbdV2_KO_ShouldReturnErrorUrl_GenericException() throws Exception {
+    when(mbdService.createMbdV2(any(), any()))
         .thenAnswer(item -> Mono.error(new RuntimeException("")));
     webClient
         .post()
         .uri("/v2/organizations/test/mbd")
         .bodyValue(
             objectMapper.writeValueAsBytes(
-                GetMbdRequestV2.builder()
+                CreateMbdRequestV2.builder()
                     .paymentNotices(Collections.singletonList(PaymentNoticeV2.builder().build()))
                     .returnUrls(ReturnUrlsV2.builder().errorUrl(TEST_URL).build())
                     .build()))
@@ -102,15 +102,15 @@ class MbdControllerV2Test {
   }
 
   @Test
-  void getMdbV2_KO_ShouldReturnErrorUrl_ConstraintViolationException() throws Exception {
-    when(mbdService.getMbdV2(any(), any()))
+  void createMbdV2_KO_ShouldReturnErrorUrl_ConstraintViolationException() throws Exception {
+    when(mbdService.createMbdV2(any(), any()))
         .thenAnswer(item -> Mono.error(new ConstraintViolationException(Collections.emptySet())));
     webClient
         .post()
         .uri("/v2/organizations/test/mbd")
         .bodyValue(
             objectMapper.writeValueAsBytes(
-                GetMbdRequestV2.builder()
+                CreateMbdRequestV2.builder()
                     .paymentNotices(Collections.singletonList(PaymentNoticeV2.builder().build()))
                     .returnUrls(ReturnUrlsV2.builder().errorUrl(TEST_URL).build())
                     .build()))
@@ -128,15 +128,15 @@ class MbdControllerV2Test {
   }
 
   @Test
-  void getMdbV2_KO_ShouldReturnErrorUrl_AppException() throws Exception {
-    when(mbdService.getMbdV2(any(), any()))
+  void createMbdV2_KO_ShouldReturnErrorUrl_AppException() throws Exception {
+    when(mbdService.createMbdV2(any(), any()))
         .thenAnswer(item -> Mono.error(new AppException(AppError.CART_REQUEST_CALL_ERROR)));
     webClient
         .post()
         .uri("/v2/organizations/test/mbd")
         .bodyValue(
             objectMapper.writeValueAsBytes(
-                GetMbdRequestV2.builder()
+                CreateMbdRequestV2.builder()
                     .paymentNotices(Collections.singletonList(PaymentNoticeV2.builder().build()))
                     .returnUrls(ReturnUrlsV2.builder().errorUrl(TEST_URL).build())
                     .build()))

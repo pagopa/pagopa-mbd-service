@@ -14,9 +14,9 @@ import it.gov.pagopa.mbd.service.exception.AppException;
 import it.gov.pagopa.mbd.service.model.ProblemJson;
 import it.gov.pagopa.mbd.service.model.carts.GetCartErrorResponse;
 import it.gov.pagopa.mbd.service.model.carts.GetCartResponse;
-import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
-import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
-import it.gov.pagopa.mbd.service.model.mdb.GetMdbReceipt;
+import it.gov.pagopa.mbd.service.model.mbd.CreateMbdRequestV2;
+import it.gov.pagopa.mbd.service.model.mbd.GetMbdRequest;
+import it.gov.pagopa.mbd.service.model.mbd.GetMdbReceipt;
 import it.gov.pagopa.mbd.service.service.MbdService;
 import it.gov.pagopa.mbd.service.util.ApiPaths;
 import it.gov.pagopa.mbd.service.util.OpenAPIDocumentationConstants;
@@ -50,12 +50,13 @@ public class MbdControllerV1 {
   }
 
   /**
+   * Request to pay Marca da Bollo Digitale for the provided document hash
+   *
+   * @deprecated Use {@link MbdControllerV2#createMbdV2(String, CreateMbdRequestV2)} instead
    * @param organizationFiscalCode organization fiscal code
    * @param request request data to create the debt position and pay the Marca da Bollo
    * @return ResponseEntity containing the redirect url for payment and the redirect url for
    *     retrieving Marca da Bollo
-   * @deprecated Use {@link MbdControllerV2#getMdbV2(String, GetMbdRequestV2)} instead
-   *     <p>Request to pay Marca da Bollo Digitale for the provided document
    */
   @Operation(
       summary = "getMbd",
@@ -108,7 +109,7 @@ public class MbdControllerV1 {
           String organizationFiscalCode,
       @RequestBody GetMbdRequest request) {
     return mdbService
-        .getMbd(organizationFiscalCode, request)
+        .createMbd(organizationFiscalCode, request)
         .<ResponseEntity<?>>map(ResponseEntity::ok)
         .onErrorResume(
             e -> {
@@ -135,12 +136,13 @@ public class MbdControllerV1 {
   }
 
   /**
+   * Request to retrieve the Marca da Bollo receipts for the provided organization fiscal code and
+   * nav
+   *
+   * @deprecated Use {@link MbdControllerV2#getPaymentReceiptsV2(String, String)} instead
    * @param organizationFiscalCode organization fiscal code
    * @param nav notice number
    * @return ResponseEntity containing the Marca da Bollo Digitale
-   * @deprecated Use {@link MbdControllerV2#getPaymentReceiptsV2(String, String)} instead
-   *     <p>Request to retrieve the Marca da Bollo receipts for the provided organization fiscal
-   *     code and nav
    */
   @Operation(
       summary = "getPaymentReceipt",

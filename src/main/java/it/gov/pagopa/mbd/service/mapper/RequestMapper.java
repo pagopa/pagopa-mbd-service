@@ -10,13 +10,13 @@ import it.gov.pagopa.mbd.service.model.carts.CartReturnUrls;
 import it.gov.pagopa.mbd.service.model.carts.CartReturnUrlsV2;
 import it.gov.pagopa.mbd.service.model.carts.GetCartRequest;
 import it.gov.pagopa.mbd.service.model.carts.GetCartRequestV2;
-import it.gov.pagopa.mbd.service.model.mdb.Debtor;
-import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequest;
-import it.gov.pagopa.mbd.service.model.mdb.GetMbdRequestV2;
-import it.gov.pagopa.mbd.service.model.mdb.PaymentNotice;
-import it.gov.pagopa.mbd.service.model.mdb.PaymentNoticeV2;
-import it.gov.pagopa.mbd.service.model.mdb.ReturnUrlsV2;
-import it.gov.pagopa.mbd.service.model.mdb.UniqueIdentifier;
+import it.gov.pagopa.mbd.service.model.mbd.CreateMbdRequestV2;
+import it.gov.pagopa.mbd.service.model.mbd.Debtor;
+import it.gov.pagopa.mbd.service.model.mbd.GetMbdRequest;
+import it.gov.pagopa.mbd.service.model.mbd.PaymentNotice;
+import it.gov.pagopa.mbd.service.model.mbd.PaymentNoticeV2;
+import it.gov.pagopa.mbd.service.model.mbd.ReturnUrlsV2;
+import it.gov.pagopa.mbd.service.model.mbd.UniqueIdentifier;
 import it.gov.pagopa.mbd.service.util.Constants;
 import it.gov.pagopa.pagopa_api.node.nodeforpsp.CtPaymentOptionDescription;
 import it.gov.pagopa.pagopa_api.node.nodeforpsp.CtPaymentOptionsDescriptionList;
@@ -65,19 +65,19 @@ public class RequestMapper {
 
   /**
    * Builds the {@link DemandPaymentNoticeRequest} payload for the Nodo {@code demandPaymentNotice}
-   * SOAP operation, starting from the incoming application-level {@link GetMbdRequestV2}. Populates
-   * PSP identifiers from configuration and marshals the {@link TipoMarcaDaBollo} service data into
-   * the {@code datiSpecificiServizio} field.
+   * SOAP operation, starting from the incoming application-level {@link CreateMbdRequestV2}.
+   * Populates PSP identifiers from configuration and marshals the {@link TipoMarcaDaBollo} service
+   * data into the {@code datiSpecificiServizio} field.
    *
    * @param organizationFiscalCode fiscal code of the creditor organization (PA)
-   * @param getMdbRequest incoming Marca da Bollo request in its V2 shape
+   * @param mdbRequest incoming Marca da Bollo request in its V2 shape
    * @return the JAXB-typed {@link DemandPaymentNoticeRequest} ready to be sent to the Nodo
    * @throws org.springframework.oxm.XmlMappingException if the service data cannot be marshalled
    */
   public DemandPaymentNoticeRequest mapDemandPaymentNoticeRequest(
-      String organizationFiscalCode, GetMbdRequestV2 getMdbRequest) {
+      String organizationFiscalCode, CreateMbdRequestV2 mdbRequest) {
 
-    PaymentNoticeV2 paymentNotice = getMdbRequest.getPaymentNotices().get(0);
+    PaymentNoticeV2 paymentNotice = mdbRequest.getPaymentNotices().get(0);
     Debtor debtor = paymentNotice.getDebtor();
 
     CtEntityUniqueIdentifier entityUniqueIdentifier = new CtEntityUniqueIdentifier();
@@ -157,8 +157,8 @@ public class RequestMapper {
   }
 
   /**
-   * Builds the Checkout v2 {@link GetCartRequestV2} starting from the {@link GetMbdRequestV2} and
-   * the response received from the Nodo {@code demandPaymentNotice} call. Ensures that all
+   * Builds the Checkout v2 {@link GetCartRequestV2} starting from the {@link CreateMbdRequestV2}
+   * and the response received from the Nodo {@code demandPaymentNotice} call. Ensures that all
    * mandatory fields (payment options, QR code) are present in the response.
    *
    * @param request original Marca da Bollo request (v2)
@@ -168,7 +168,7 @@ public class RequestMapper {
    *     fails
    */
   public GetCartRequestV2 mapCartV2Request(
-      GetMbdRequestV2 request, DemandPaymentNoticeResponse demandPaymentNoticeResponse) {
+      CreateMbdRequestV2 request, DemandPaymentNoticeResponse demandPaymentNoticeResponse) {
     try {
       assertNotNull(demandPaymentNoticeResponse);
       CtPaymentOptionsDescriptionList ctPaymentOptionsDescriptionList =
@@ -205,15 +205,15 @@ public class RequestMapper {
   }
 
   /**
-   * Adapts a v1 {@link GetMbdRequest} to the v2 shape ({@link GetMbdRequestV2}), so the internal
+   * Adapts a v1 {@link GetMbdRequest} to the v2 shape ({@link CreateMbdRequestV2}), so the internal
    * pipeline can operate on a single model. Extracts debtor identity from first/last name and
    * fiscal code and detects whether it is a natural person or a legal entity.
    *
    * @param request v1 Marca da Bollo request
    * @return the equivalent v2 representation
    */
-  public GetMbdRequestV2 mapGetMbdRequestToGetMbdRequestV2(GetMbdRequest request) {
-    return GetMbdRequestV2.builder()
+  public CreateMbdRequestV2 mapGetMbdRequestToGetMbdRequestV2(GetMbdRequest request) {
+    return CreateMbdRequestV2.builder()
         .paymentNotices(
             request.getPaymentNotices().stream()
                 .map(

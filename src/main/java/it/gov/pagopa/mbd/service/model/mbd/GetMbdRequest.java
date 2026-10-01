@@ -1,4 +1,4 @@
-package it.gov.pagopa.mbd.service.model.mdb;
+package it.gov.pagopa.mbd.service.model.mbd;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -25,7 +25,7 @@ public class GetMbdRequest {
   @Schema(
       example = "04",
       description =
-          "Identifier of the association between the organization and MDB payment service.")
+          "Identifier of the association between the organization and MBD payment service.")
   @NotBlank
   private String idCIService;
 
