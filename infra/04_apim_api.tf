@@ -75,6 +75,7 @@ module "apim_mbd_api_v2" {
 
   xml_content = templatefile("./policy/_base_policy.xml", {
     hostname = local.hostname
-    corsPolicy = var.env_short != "u" ? "" : "<cors><allowed-origins><origin>https://shared.dev.platform.pagopa.it</origin><origin>http://localhost:3000</origin></allowed-origins><allowed-methods><method>GET</method><method>POST</method><method>OPTIONS</method></allowed-methods><allowed-headers><header>*</header></allowed-headers></cors>"
+    # corsPolicy = var.env_short != "u" ? "" : "<cors><allowed-origins><origin>https://shared.dev.platform.pagopa.it</origin><origin>http://localhost:3000</origin></allowed-origins><allowed-methods><method>GET</method><method>POST</method><method>OPTIONS</method></allowed-methods><allowed-headers><header>*</header></allowed-headers></cors>"
+    corsPolicy = var.env_short != "u" ? "" : "<cors><allowed-origins><origin>https://shared.dev.platform.pagopa.it</origin></allowed-origins><allowed-methods><method>GET</method><method>POST</method><method>OPTIONS</method></allowed-methods><allowed-headers><header>*</header></allowed-headers></cors>"
   })
 }
