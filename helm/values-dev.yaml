@@ -11,7 +11,7 @@ microservice-chart:
     httpGet:
       path: /actuator/health/liveness
       port: 8080
-    initialDelaySeconds: 90
+    initialDelaySeconds: 30
     failureThreshold: 6
     periodSeconds: 10
   readinessProbe:
@@ -19,7 +19,7 @@ microservice-chart:
     httpGet:
       path: /actuator/health/readiness
       port: 8080
-    initialDelaySeconds: 90
+    initialDelaySeconds: 30
     failureThreshold: 6
     periodSeconds: 10
   deployment:
@@ -65,7 +65,7 @@ microservice-chart:
       - type: cpu
         metadata:
           # Required
-          type: Utilization # Allowed types are 'Utilization' or 'AverageValue'
+          metricType: Utilization # Allowed types are 'Utilization' or 'AverageValue'
           value: "75"
   envConfig:
     APP_NAME: "mbd-service"
