@@ -63,9 +63,9 @@ microservice-chart:
     cooldownPeriod: 300 # seconds
     triggers:
       - type: cpu
+        # Required
+        metricType: Utilization # Allowed types are 'Utilization' or 'AverageValue'
         metadata:
-          # Required
-          metricType: 'Utilization' # Allowed types are 'Utilization' or 'AverageValue'
           value: "75"
   envConfig:
     APP_NAME: "mbd-service"
