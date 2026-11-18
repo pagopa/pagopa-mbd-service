@@ -68,7 +68,7 @@ microservice-chart:
         metadata:
           value: "75"
   envConfig:
-    JAVA_TOOL_OPTIONS: "-XX:-UseBASE64Intrinsics -XX:UseAVX=2"
+    JAVA_TOOL_OPTIONS: "-XX:-UseBASE64Intrinsics"
     APP_NAME: "mbd-service"
     APP_ENVIRONMENT: "dev"
     WEBSITE_SITE_NAME: 'mbd-service' # required to show cloud role name in application insights
